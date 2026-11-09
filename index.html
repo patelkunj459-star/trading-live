@@ -101,7 +101,7 @@ function parse(msg){
  var d={closed:null,all:null,won:null,total:null,status:"",mtc:null,openN:0,openPnl:null,pos:[],ev:[]},m;
  var L=String(msg.message||"").split("\n");
  for(var i=0;i<L.length;i++){var l=L[i];
-  if((m=l.match(/\*\*Closed today ([^*]+)\*\*,\s*all-time ([^,]+),\s*(\d+) of (\d+) trades won/))){d.closed=money(m[1]);d.all=money(m[2]);d.won=+m[3];d.total=+m[4]}
+  if((m=l.match(/\*\*Closed today ([^*]+)\*\*,\s*all-time ([+\-]?\$[\d,.]+),\s*(\d+) of (\d+) trades won/))){d.closed=money(m[1]);d.all=money(m[2]);d.won=+m[3];d.total=+m[4]}
   else if((m=l.match(/^(.*?)(?:\. Updated|\.$)/))&&!d.status&&i===1){d.status=m[1];var t=l.match(/(\d+)h (\d+)m to the close/);if(t)d.mtc=+t[1]*60+ +t[2]}
   else if((m=l.match(/\*\*Open now \((\d+)\)\*\*\s*([+\-]?\$[\d,.]+)?/))){d.openN=+m[1];d.openPnl=money(m[2])}
   else if((m=l.match(/^- (.+?) x([\d.]+): ([\d.]+) to ([\d.]+)\s+\*\*([+\-]?\$[\d,.]+)\*\*\s+\(([+\-]?[\d.]+)%\)/))){d.pos.push({n:m[1],q:+m[2],a:+m[3],p:+m[4],pl:money(m[5]),pc:+m[6]})}
