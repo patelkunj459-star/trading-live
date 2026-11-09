@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Trading live">
+<meta name="theme-color" content="#0b1014">
+<title>Trading live</title>
+<style>
+:root{--bg:#0b1014;--panel:#121a21;--line:#1f2a33;--tx:#e8eef2;--mut:#7d8b96;--gain:#52e0a1;--loss:#ff7a6b;--amb:#f2b84b}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--tx);min-height:100%}
+body{font:15px/1.35 ui-rounded,"SF Pro Rounded",system-ui,-apple-system,"Segoe UI",sans-serif;font-variant-numeric:tabular-nums;
+ padding:max(14px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(28px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));max-width:560px;margin:0 auto}
+.top{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--mut);flex:none}
+.dot.on{background:var(--gain);animation:pulse 2s ease-out infinite}
+.dot.stale{background:var(--amb)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(82,224,161,.55)}70%,100%{box-shadow:0 0 0 9px rgba(82,224,161,0)}}
+#status{font-weight:600;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#ago{color:var(--mut);font-size:13px;flex:none}
+canvas#beat{display:block;width:100%;height:60px;margin:2px 0 10px}
+.hero{padding:6px 0 14px}
+.lbl{color:var(--mut);font-size:13px}
+#big{font-size:clamp(44px,15vw,68px);font-weight:700;letter-spacing:-.02em;line-height:1.05;transition:color .4s}
+.row3{display:flex;gap:10px;margin-top:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px;flex:1;min-width:0}
+.card b{display:block;font-size:19px;font-weight:650;margin-top:2px;white-space:nowrap}
+.clock{margin:14px 0 4px}
+.track{height:8px;background:var(--line);border-radius:6px;overflow:hidden;margin-top:6px}
+#fill{height:100%;width:0;background:var(--amb);border-radius:6px;transition:width 1.2s ease}
+h2{font-size:13px;font-weight:600;color:var(--mut);margin:22px 0 8px}
+.pos{display:grid;grid-template-columns:minmax(74px,31%) 1fr auto;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.pos:first-child{border-top:0}
+.sym{font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sym small{display:block;color:var(--mut);font-weight:400;font-size:12px}
+.bar{position:relative;height:14px;background:var(--panel);border-radius:7px;overflow:hidden}
+.bar::after{content:"";position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--line)}
+.bar i{position:absolute;top:0;bottom:0;left:50%;width:0;border-radius:0;transition:width .9s cubic-bezier(.2,.8,.2,1),left .9s cubic-bezier(.2,.8,.2,1),background .4s}
+.amt{font-weight:650;text-align:right;white-space:nowrap}
+.amt small{display:block;font-weight:400;font-size:12px}
+.up{color:var(--gain)}.dn{color:var(--loss)}.flat{color:var(--mut)}
+.flash{animation:fl .9s ease-out}
+@keyframes fl{0%{background:rgba(242,184,75,.28)}100%{background:transparent}}
+.ev{display:flex;gap:10px;padding:8px 0;border-top:1px solid var(--line);animation:slide .5s ease-out}
+.ev:first-child{border-top:0}
+@keyframes slide{0%{opacity:0;transform:translateY(-10px)}100%{opacity:1;transform:none}}
+.tag{flex:none;font-weight:700;font-size:12px;border-radius:6px;padding:2px 0;height:22px;margin-top:1px;width:42px;text-align:center}
+.tag.buy{background:rgba(82,224,161,.16);color:var(--gain)}.tag.sell{background:rgba(255,122,107,.16);color:var(--loss)}
+.ev div{min-width:0}.ev span{color:var(--mut);font-size:12.5px;display:block}
+.empty{color:var(--mut);padding:10px 0}
+#setup{display:none;margin-top:30px}
+#setup input{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--tx);font:inherit;margin:10px 0}
+#setup button{padding:12px 18px;border-radius:12px;border:0;background:var(--gain);color:#06231a;font:inherit;font-weight:700}
+.foot{color:var(--mut);font-size:12.5px;margin-top:26px;text-align:center}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head><body>
+<div class="top"><span class="dot" id="dot"></span><div id="status">Connecting…</div><div id="ago"></div></div>
+<canvas id="beat"></canvas>
+<div id="main" hidden>
+ <div class="hero"><div class="lbl">Closed trades today</div><div id="big" class="flat">$0</div>
+  <div class="row3">
+   <div class="card"><span class="lbl">Open now</span><b id="open">–</b></div>
+   <div class="card"><span class="lbl">All time</span><b id="all">–</b></div>
+   <div class="card"><span class="lbl">Won</span><b id="won">–</b></div>
+  </div></div>
+ <div class="clock"><div class="lbl" id="clocktxt">Market clock</div><div class="track"><div id="fill"></div></div></div>
+ <h2 id="ph">Open positions</h2><div id="pos"></div>
+ <h2>Latest trades</h2><div id="evs"></div>
+ <div class="foot">Paper trading, fake money. Updates by itself.</div>
+</div>
+<div id="setup"><h2 style="margin:0">One-time setup</h2><p class="lbl">Paste your live channel name (starts with "live-").</p>
+ <input id="chan" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="live-…"><button id="save">Start</button></div>
+<script>
+(function(){
+"use strict";
+var $=function(i){return document.getElementById(i)};
+var SERVER="https://ntfy.sh",chan="",lastTime=0,lastData=null,es=null,connected=false,reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+// ---- channel: from the link (#live-...) or remembered
+(function(){var h=(location.hash||"").replace(/^#c?=?/,"");if(/^live-[a-z0-9]{10,}$/.test(h)){chan=h;store("chan",h)}else{var s=store("chan");if(s&&/^live-[a-z0-9]{10,}$/.test(s))chan=s}})();
+// ---- parse the bot's status text
+function money(s){if(!s)return null;var n=parseFloat(String(s).replace(/[$,+]/g,""));return isFinite(n)?n:null}
+function usd(v,sign){if(v==null)return "–";var a=Math.abs(v),t=a>=100?Math.round(a).toLocaleString("en-US"):a.toFixed(2);return(v<0?"-":(sign&&v>0?"+":""))+"$"+t}
+function parse(msg){
+ var d={closed:null,all:null,won:null,total:null,status:"",mtc:null,openN:0,openPnl:null,pos:[],ev:[]},m;
+ var L=String(msg.message||"").split("\n");
+ for(var i=0;i<L.length;i++){var l=L[i];
+  if((m=l.match(/\*\*Closed today ([^*]+)\*\*,\s*all-time ([^,]+),\s*(\d+) of (\d+) trades won/))){d.closed=money(m[1]);d.all=money(m[2]);d.won=+m[3];d.total=+m[4]}
+  else if((m=l.match(/^(.*?)(?:\. Updated|\.$)/))&&!d.status&&i===1){d.status=m[1];var t=l.match(/(\d+)h (\d+)m to the close/);if(t)d.mtc=+t[1]*60+ +t[2]}
+  else if((m=l.match(/\*\*Open now \((\d+)\)\*\*\s*([+\-]?\$[\d,.]+)?/))){d.openN=+m[1];d.openPnl=money(m[2])}
+  else if((m=l.match(/^- (.+?) x([\d.]+): ([\d.]+) to ([\d.]+)\s+\*\*([+\-]?\$[\d,.]+)\*\*\s+\(([+\-]?[\d.]+)%\)/))){d.pos.push({n:m[1],q:+m[2],a:+m[3],p:+m[4],pl:money(m[5]),pc:+m[6]})}
+  else if((m=l.match(/^- (.+?) x([\d.]+): bought at ([\d.]+)/))){d.pos.push({n:m[1],q:+m[2],a:+m[3],p:null,pl:null,pc:null})}
+  else if((m=l.match(/^- (\d+:\d+ [AP]M) \*\*(BUY|SELL)\*\* (.+?) x([\d.]+) @ ([\d.]+)\s*(.*)$/))){d.ev.push({t:m[1],k:m[2],n:m[3],q:+m[4],p:+m[5],w:m[6]})}
+ }
+ d.time=msg.time||0;return d}
+// ---- render
+var shown={closed:0};
+function tween(el,from,to,fmt,ms){
+ if(reduce||from===to){el.textContent=fmt(to);return}
+ var t0=performance.now();(function f(t){var k=Math.min(1,(t-t0)/ms),e=1-Math.pow(1-k,3);el.textContent=fmt(from+(to-from)*e);if(k<1)requestAnimationFrame(f)})(t0)}
+function cls(v){return v>0?"up":v<0?"dn":"flat"}
+function setText(id,t,c){var e=$(id);if(e.textContent!==t){e.textContent=t;e.classList.remove("flash");void e.offsetWidth;e.classList.add("flash")}if(c)e.className=c}
+function nice(n){var m=n.match(/^([A-Z.]+) (call|put) \$([\d.]+) exp (\d+)\/(\d+)/);return m?{s:m[1]+" "+m[2],sub:"$"+m[3]+" · exp "+m[4]+"/"+m[5],opt:true}:{s:n,sub:"",opt:false}}
+function render(d){
+ $("main").hidden=false;
+ var oldC=shown.closed,newC=d.closed==null?0:d.closed;
+ tween($("big"),oldC,newC,function(v){return usd(v,true)},800);$("big").className=cls(newC);shown.closed=newC;
+ setText("open",usd(d.openPnl,true),cls(d.openPnl));$("open").className=cls(d.openPnl);
+ setText("all",usd(d.all,true));$("all").className=cls(d.all);
+ setText("won",d.total?d.won+"/"+d.total:"–");
+ if(d.mtc!=null){var open=390,done=Math.max(0,Math.min(1,(open-d.mtc)/open));$("fill").style.width=(done*100)+"%";
+  $("clocktxt").textContent=Math.floor(d.mtc/60)+"h "+(d.mtc%60)+"m until the market closes"}
+ else{$("fill").style.width="0%";$("clocktxt").textContent=d.status||"Market clock"}
+ $("status").textContent=d.status||"Live";
+ $("ph").textContent="Open positions ("+d.openN+")";
+ var P=$("pos");P.textContent="";
+ if(!d.pos.length){var e=document.createElement("div");e.className="empty";e.textContent="Nothing held right now.";P.appendChild(e)}
+ d.pos.slice().sort(function(a,b){return (b.pl||0)-(a.pl||0)}).forEach(function(p){
+  var nm=nice(p.n),r=document.createElement("div");r.className="pos";
+  var s=document.createElement("div");s.className="sym";s.textContent=nm.s;var sm=document.createElement("small");sm.textContent=nm.sub||("x"+p.q);s.appendChild(sm);
+  var b=document.createElement("div");b.className="bar";var i=document.createElement("i");b.appendChild(i);
+  var a=document.createElement("div");a.className="amt "+cls(p.pl);a.textContent=p.pl==null?"–":usd(p.pl,true);var as=document.createElement("small");as.textContent=p.pc==null?"":(p.pc>0?"+":"")+p.pc.toFixed(1)+"%";a.appendChild(as);
+  r.appendChild(s);r.appendChild(b);r.appendChild(a);P.appendChild(r);
+  var sc=nm.opt?40:3,w=p.pc==null?0:Math.min(1,Math.abs(p.pc)/sc)*50;
+  i.style.background=p.pc>0?"var(--gain)":"var(--loss)";
+  i.style.left=p.pc>=0?"50%":(50-w)+"%";
+  requestAnimationFrame(function(){requestAnimationFrame(function(){i.style.width=w+"%"})})});
+ var E=$("evs"),prev=lastData?lastData.ev.map(function(x){return x.t+x.k+x.n}):[];E.textContent="";
+ if(!d.ev.length){var e2=document.createElement("div");e2.className="empty";e2.textContent="No trades yet.";E.appendChild(e2)}
+ d.ev.forEach(function(x){var r=document.createElement("div");r.className="ev";
+  if(prev.length&&prev.indexOf(x.t+x.k+x.n)>=0)r.style.animation="none";
+  var g=document.createElement("span");g.className="tag "+(x.k==="BUY"?"buy":"sell");g.textContent=x.k;
+  var nm=nice(x.n),c=document.createElement("div"),h=document.createElement("div");h.textContent=nm.s+(nm.sub?" "+nm.sub:"")+" · "+x.q+" @ "+x.p.toFixed(2);
+  var w=document.createElement("span");w.textContent=x.t+(x.w?" · "+x.w:"");c.appendChild(h);c.appendChild(w);r.appendChild(g);r.appendChild(c);E.appendChild(r)});
+ lastData=d}
+// ---- heartbeat strip
+var cv=$("beat"),cx=cv.getContext("2d"),W=0,H=0,dpr=1,buf=[],queue=[],beatCol="#7d8b96",idleAt=0;
+function size(){dpr=window.devicePixelRatio||1;W=cv.clientWidth;H=cv.clientHeight;cv.width=W*dpr;cv.height=H*dpr;cx.setTransform(dpr,0,0,dpr,0,0);while(buf.length<W)buf.unshift(0);buf.length=W}
+function spike(dir,big){var a=big?1:.35,p=[0,0,.1,.25,.1,0,-.2,-1,1.0,-.45,-.1,0,.12,.28,.34,.28,.12,0,0,0];
+ for(var i=0;i<p.length;i++)queue.push(p[i]*a*(dir<0?-1:1))}
+function draw(){
+ buf.push(queue.length?queue.shift():0);buf.push(queue.length?queue.shift():0);buf.shift();buf.shift();
+ cx.clearRect(0,0,W,H);cx.lineWidth=2;cx.lineJoin="round";cx.strokeStyle=beatCol;cx.globalAlpha=.9;cx.beginPath();
+ var mid=H/2;for(var x=0;x<W;x++){var y=mid-buf[x]*(H*.42);x?cx.lineTo(x,y):cx.moveTo(x,y)}cx.stroke();
+ var now=Date.now();if(connected&&now>idleAt&&!queue.length){spike(1,false);idleAt=now+2600;}
+ requestAnimationFrame(draw)}
+function beat(delta){beatCol=delta>0?"#52e0a1":delta<0?"#ff7a6b":"#f2b84b";spike(delta<0?-1:1,true);if(navigator.vibrate)try{navigator.vibrate(15)}catch(e){}}
+// ---- data
+function apply(msg,live){
+ if(!msg||msg.event!=="message"||!msg.message)return;
+ if(msg.time<lastTime)return;lastTime=msg.time;
+ var d=parse(msg);var was=lastData;render(d);
+ if(live&&was){var dl=((d.closed||0)+(d.openPnl||0))-((was.closed||0)+(was.openPnl||0));beat(dl)}
+ tickAgo()}
+function poll(){
+ if(!chan)return;
+ fetch(SERVER+"/"+chan+"/json?poll=1&since=12h",{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){
+  var L=t.trim().split("\n").filter(Boolean),last=null;
+  for(var i=0;i<L.length;i++){try{var o=JSON.parse(L[i]);if(o.event==="message")last=o}catch(e){}}
+  if(last){var first=!lastData;apply(last,!first&&last.time>lastTime)}
+  else if(!lastData)$("status").textContent="Waiting for the bot's first update…";
+ }).catch(function(){});
+}
+function open(){
+ if(!chan)return;if(es){try{es.close()}catch(e){}}
+ es=new EventSource(SERVER+"/"+chan+"/sse");
+ es.onopen=function(){connected=true;$("dot").className="dot on"};
+ es.onerror=function(){connected=false;$("dot").className="dot stale"};
+ es.onmessage=function(ev){try{apply(JSON.parse(ev.data),true)}catch(e){}}}
+function tickAgo(){
+ if(!lastTime){$("ago").textContent="";return}
+ var s=Math.max(0,Math.round(Date.now()/1000-lastTime)),t=s<60?s+"s ago":s<3600?Math.floor(s/60)+"m ago":Math.floor(s/3600)+"h ago";
+ $("ago").textContent=t;
+ if(connected)$("dot").className="dot on"+(s>1500&&lastData&&lastData.mtc!=null?" stale":"");}
+document.addEventListener("visibilitychange",function(){if(!document.hidden){poll();open()}});
+window.addEventListener("online",function(){poll();open()});
+window.addEventListener("resize",size);
+$("save").onclick=function(){var v=$("chan").value.trim().replace(/^.*\//,"");if(/^live-[a-z0-9]{10,}$/.test(v)){store("chan",v);location.hash=v;location.reload()}};
+size();
+if(!chan){$("setup").style.display="block";$("status").textContent="Setup needed"}
+else{if(!reduce)requestAnimationFrame(draw);poll();open();setInterval(poll,30000);setInterval(tickAgo,1000)}
+})();
+</script></body></html>
