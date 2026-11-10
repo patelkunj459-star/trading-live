@@ -411,6 +411,49 @@ APP.start=function(){
 };
 })();
 
+/* ===== keep the app exactly as tall as the screen (iPhone home-screen apps sometimes report a shorter page after a gesture) ===== */
+(function(){
+"use strict";
+var app=document.getElementById("app");if(!app)return;
+function standalone(){try{return window.navigator.standalone===true||(window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches)}catch(e){return false}}
+function nums(){
+ var vv=window.visualViewport||null;
+ return{ih:window.innerHeight||0,iw:window.innerWidth||0,vh:vv?Math.round(vv.height):0,vt:vv?Math.round(vv.offsetTop):0,vs:vv?Math.round(vv.scale*100)/100:1,
+  ch:document.documentElement.clientHeight||0,sw:(window.screen&&screen.width)||0,sh:(window.screen&&screen.height)||0}}
+function fit(){
+ var n=nums(),h=Math.max(n.ih,n.vh,n.ch);
+ if(standalone()&&n.sw&&n.sh){
+  // a home-screen app fills the whole screen; screen.width/height are the portrait numbers on iPhone
+  var land=n.iw>n.ih,full=land?Math.min(n.sw,n.sh):Math.max(n.sw,n.sh);
+  if(full>h&&full-h<=140)h=full;
+ }
+ if(h>200)app.style.height=h+"px";
+}
+var t=null;function soon(){if(t)return;t=setTimeout(function(){t=null;fit()},60)}
+fit();
+["resize","orientationchange","pageshow","focus","scroll"].forEach(function(e){window.addEventListener(e,soon,{passive:true})});
+document.addEventListener("visibilitychange",soon);
+if(window.visualViewport){visualViewport.addEventListener("resize",soon);visualViewport.addEventListener("scroll",soon)}
+[200,700,1600,3500].forEach(function(ms){setTimeout(fit,ms)});
+setInterval(fit,4000);
+
+/* triple-tap the top of the screen to show / hide a small readout of the sizes (for finding layout bugs on a phone) */
+var probe=document.createElement("div");probe.setAttribute("aria-hidden","true");
+probe.style.cssText="position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)";
+document.body.appendChild(probe);
+var box=null,timer=null;
+function px(v){return Math.round(parseFloat(v)||0)}
+function show(){
+ if(!box){box=document.createElement("div");box.setAttribute("role","status");
+  box.style.cssText="position:fixed;left:8px;right:8px;top:calc(env(safe-area-inset-top) + 52px);z-index:99;background:rgba(0,0,0,.86);border:1px solid #3ef0d0;border-radius:10px;padding:8px 10px;font:11px/1.45 ui-monospace,Menlo,monospace;color:#9fffe0;white-space:pre-wrap;pointer-events:none";
+  document.body.appendChild(box)}
+ var n=nums(),cs=getComputedStyle(probe),ar=app.getBoundingClientRect(),tb=document.getElementById("tabs"),tr=tb?tb.getBoundingClientRect():{top:0,bottom:0};
+ box.textContent="inner "+n.iw+"x"+n.ih+"  visual "+n.vh+" (top "+n.vt+", zoom "+n.vs+")\nclient "+n.ch+"  screen "+n.sw+"x"+n.sh+"\nhome-screen app: "+(standalone()?"yes":"no")+"\nsafe area top "+px(cs.paddingTop)+" bottom "+px(cs.paddingBottom)+"\napp "+Math.round(ar.top)+" to "+Math.round(ar.bottom)+"  tabs "+Math.round(tr.top)+" to "+Math.round(tr.bottom)+"\nscroll "+Math.round(window.scrollY||0)+"  page "+document.documentElement.scrollHeight}
+function toggle(){if(box){clearInterval(timer);box.remove();box=null;return}show();timer=setInterval(show,500)}
+var taps=[];
+document.addEventListener("touchstart",function(e){var p=e.touches&&e.touches[0];if(!p||e.touches.length!==1||p.clientY>130)return;var now=Date.now();taps=taps.filter(function(x){return now-x<900});taps.push(now);if(taps.length>=3){taps=[];toggle()}},{passive:true});
+})();
+
 (function(){
 "use strict";
 var $=function(i){return document.getElementById(i)};
