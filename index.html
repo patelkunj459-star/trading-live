@@ -278,6 +278,29 @@ button{font:inherit;color:inherit}
 .wbox.pos{border-color:rgba(62,240,208,.4);background:rgba(62,240,208,.06)}.wbox.neg{border-color:rgba(255,92,138,.45);background:rgba(255,92,138,.06)}
 @media (max-width:340px){.hs{grid-template-columns:1fr 60px 28px}.tc{padding:11px 12px}}
 
+/* ===== stable frame: one fixed box the size of the screen; nothing is laid out against vh/dvh ===== */
+:root{--sat:calc(env(safe-area-inset-top,0px) + 24px);--vh:100dvh}
+html{position:fixed;inset:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
+body{position:fixed;inset:0;width:100%;height:100%;overflow:hidden}
+/* a solid bar behind the Dynamic Island / status bar, so nothing slides under the iPhone's blur */
+body::before{content:"";position:fixed;left:0;right:0;top:0;height:env(safe-area-inset-top,0px);background:var(--bg0);z-index:60;pointer-events:none}
+#app{overflow:hidden}
+/* the sheets live inside #app (moved there at start), so they are sized by the app box, not by the browser's idea of the screen */
+#app>#mveil,#app>#veil{position:absolute;inset:0}
+#app>#msheet{position:absolute;bottom:0;height:90%}
+#app>#sheet{position:absolute;bottom:0}
+@media (orientation:landscape) and (max-height:520px){#app>#msheet{height:96%}}
+@media (orientation:portrait){
+ /* keep text out of the soft blur iOS draws under the Dynamic Island */
+ .mh{padding-top:max(10px,var(--sat))}
+ #scan-side{padding-top:max(10px,var(--sat))}
+ .hud{padding-top:max(12px,var(--sat))}
+}
+/* grab handle: a bigger, easier-to-hit strip; drag it (or the title) down to close */
+#msheet .grab{width:46px;height:5px;margin:9px auto 0;background:rgba(130,150,255,.5);position:relative;touch-action:none}
+#msheet .grab::before{content:"";position:absolute;left:-90px;right:-90px;top:-9px;bottom:-16px}
+#msheet.dragging{transition:none}
+
 </style></head>
 <div id="app">
  <div id="views">
@@ -391,7 +414,7 @@ function sha(s){return crypto.subtle.digest("SHA-256",new TextEncoder().encode(s
 APP.derive=function(){
  if(!APP.chan)return Promise.resolve();
  // the two private channels are one-way hashes of the live channel name; the PC computes the same names
- return Promise.all([sha("mkt:"+APP.chan),sha("req:"+APP.chan)]).then(function(r){APP.mchan="mkt-"+r[0].slice(0,30);APP.rchan="req-"+r[1].slice(0,30)});
+ return Promise.all([sha("mkt:"+APP.chan),sha("req:"+APP.chan),sha("dbg:"+APP.chan)]).then(function(r){APP.mchan="mkt-"+r[0].slice(0,30);APP.rchan="req-"+r[1].slice(0,30);APP.dchan="dbg-"+r[2].slice(0,30)});
 };
 var TABS=["bot","scan","stocks","map","news"];
 APP.go=function(name){
@@ -415,11 +438,13 @@ APP.start=function(){
 (function(){
 "use strict";
 var app=document.getElementById("app");if(!app)return;
+["mveil","msheet","veil","sheet"].forEach(function(id){var e=document.getElementById(id);if(e&&e.parentNode!==app)app.appendChild(e)});
 function standalone(){try{return window.navigator.standalone===true||(window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches)}catch(e){return false}}
 function nums(){
  var vv=window.visualViewport||null;
  return{ih:window.innerHeight||0,iw:window.innerWidth||0,vh:vv?Math.round(vv.height):0,vt:vv?Math.round(vv.offsetTop):0,vs:vv?Math.round(vv.scale*100)/100:1,
   ch:document.documentElement.clientHeight||0,sw:(window.screen&&screen.width)||0,sh:(window.screen&&screen.height)||0}}
+var lastH=0;
 function fit(){
  var n=nums(),h=Math.max(n.ih,n.vh,n.ch);
  if(standalone()&&n.sw&&n.sh){
@@ -427,7 +452,8 @@ function fit(){
   var land=n.iw>n.ih,full=land?Math.min(n.sw,n.sh):Math.max(n.sw,n.sh);
   if(full>h&&full-h<=140)h=full;
  }
- if(h>200)app.style.height=h+"px";
+ if(h>200&&h!==lastH){lastH=h;app.style.height=h+"px";document.documentElement.style.setProperty("--vh",h+"px")}
+ if((window.scrollY||window.pageYOffset||0)!==0||(window.scrollX||0)!==0){try{window.scrollTo(0,0)}catch(e){}}
 }
 var t=null;function soon(){if(t)return;t=setTimeout(function(){t=null;fit()},60)}
 fit();
@@ -437,21 +463,44 @@ if(window.visualViewport){visualViewport.addEventListener("resize",soon);visualV
 [200,700,1600,3500].forEach(function(ms){setTimeout(fit,ms)});
 setInterval(fit,4000);
 
-/* triple-tap the top of the screen to show / hide a small readout of the sizes (for finding layout bugs on a phone) */
+/* ===== layout readout: triple-tap the top of the screen to see it; the app also reports it (numbers only) so layout bugs can be found without a screenshot ===== */
 var probe=document.createElement("div");probe.setAttribute("aria-hidden","true");
 probe.style.cssText="position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)";
 document.body.appendChild(probe);
-var box=null,timer=null;
 function px(v){return Math.round(parseFloat(v)||0)}
+function snapshot(){
+ var n=nums(),cs=getComputedStyle(probe),ar=app.getBoundingClientRect(),tb=document.getElementById("tabs"),tr=tb?tb.getBoundingClientRect():{top:0,bottom:0},sh=document.getElementById("msheet"),sr=sh?sh.getBoundingClientRect():{top:0,bottom:0};
+ return{n:n,sa:standalone(),satop:px(cs.paddingTop),sabot:px(cs.paddingBottom),at:Math.round(ar.top),ab:Math.round(ar.bottom),tt:Math.round(tr.top),tbm:Math.round(tr.bottom),
+  sy:Math.round(window.scrollY||0),dh:document.documentElement.scrollHeight,sheet:sh&&sh.classList.contains("open")?[Math.round(sr.top),Math.round(sr.bottom)]:null,tab:(window.APP&&APP.tab)||""}}
+var box=null,timer=null;
 function show(){
  if(!box){box=document.createElement("div");box.setAttribute("role","status");
   box.style.cssText="position:fixed;left:8px;right:8px;top:calc(env(safe-area-inset-top) + 52px);z-index:99;background:rgba(0,0,0,.86);border:1px solid #3ef0d0;border-radius:10px;padding:8px 10px;font:11px/1.45 ui-monospace,Menlo,monospace;color:#9fffe0;white-space:pre-wrap;pointer-events:none";
   document.body.appendChild(box)}
- var n=nums(),cs=getComputedStyle(probe),ar=app.getBoundingClientRect(),tb=document.getElementById("tabs"),tr=tb?tb.getBoundingClientRect():{top:0,bottom:0};
- box.textContent="inner "+n.iw+"x"+n.ih+"  visual "+n.vh+" (top "+n.vt+", zoom "+n.vs+")\nclient "+n.ch+"  screen "+n.sw+"x"+n.sh+"\nhome-screen app: "+(standalone()?"yes":"no")+"\nsafe area top "+px(cs.paddingTop)+" bottom "+px(cs.paddingBottom)+"\napp "+Math.round(ar.top)+" to "+Math.round(ar.bottom)+"  tabs "+Math.round(tr.top)+" to "+Math.round(tr.bottom)+"\nscroll "+Math.round(window.scrollY||0)+"  page "+document.documentElement.scrollHeight}
+ var s=snapshot(),n=s.n;
+ box.textContent="inner "+n.iw+"x"+n.ih+"  visual "+n.vh+" (top "+n.vt+", zoom "+n.vs+")\nclient "+n.ch+"  screen "+n.sw+"x"+n.sh+"\nhome-screen app: "+(s.sa?"yes":"no")+"\nsafe area top "+s.satop+" bottom "+s.sabot+"\napp "+s.at+" to "+s.ab+"  tabs "+s.tt+" to "+s.tbm+"\nscroll "+s.sy+"  page "+s.dh}
 function toggle(){if(box){clearInterval(timer);box.remove();box=null;return}show();timer=setInterval(show,500)}
 var taps=[];
 document.addEventListener("touchstart",function(e){var p=e.touches&&e.touches[0];if(!p||e.touches.length!==1||p.clientY>130)return;var now=Date.now();taps=taps.filter(function(x){return now-x<900});taps.push(now);if(taps.length>=3){taps=[];toggle()}},{passive:true});
+
+var sent=0,lastKey="";
+function report(ev){
+ try{
+  if(!window.APP||!APP.dchan||sent>=14)return;
+  var day=new Date().toISOString().slice(0,10),k="dbgn:"+day,c=parseInt(APP.store(k)||"0",10)||0;if(c>=40)return;
+  var s=snapshot();var key=[s.n.ih,s.n.vh,s.n.ch,s.ab,s.tbm,s.sy,s.n.vt,s.sheet?1:0].join("/");if(ev!=="load"&&key===lastKey)return;lastKey=key;
+  sent++;APP.store(k,String(c+1));
+  fetch(APP.SERVER+"/"+APP.dchan,{method:"POST",body:JSON.stringify({ev:ev,t:new Date().toISOString().slice(11,19),ua:(navigator.userAgent||"").replace(/^Mozilla\/5.0 /,"").slice(0,90),s:s})}).catch(function(){});
+ }catch(e){}
+}
+APP.report=report;
+document.addEventListener("appready",function(){setTimeout(function(){report("load")},2500)});
+var rt=null;function rsoon(ev){clearTimeout(rt);rt=setTimeout(function(){report(ev)},1200)}
+window.addEventListener("resize",function(){rsoon("resize")},{passive:true});
+window.addEventListener("scroll",function(){rsoon("scroll")},{passive:true});
+if(window.visualViewport){visualViewport.addEventListener("resize",function(){rsoon("vvresize")});visualViewport.addEventListener("scroll",function(){rsoon("vvscroll")})}
+document.addEventListener("visibilitychange",function(){if(!document.hidden)rsoon("visible")});
+var ms=document.getElementById("msheet");if(ms&&window.MutationObserver)new MutationObserver(function(){rsoon(ms.classList.contains("open")?"sheet-open":"sheet-close")}).observe(ms,{attributes:true,attributeFilter:["class"]});
 })();
 
 (function(){
@@ -1723,6 +1772,44 @@ function fillWorldBox(sym){
  el.innerHTML='<div class="wbox '+(net>0?"pos":net<0?"neg":"mid")+'"><b>World signals '+(net>0?"support it":net<0?"work against it":"are mixed")+" ("+(net>0?"+":"")+net+")</b>"+
   (up.length?"<span>Helped by: "+esc(up.join(" · "))+"</span>":"")+(dn.length?"<span>Hurt by: "+esc(dn.join(" · "))+"</span>":"")+"</div>";
 }
+
+/* ---------- drag the sheet down to close it (grab handle, the title, or the top of the page) ---------- */
+(function(){
+ var sh=$("msheet"),vl=$("mveil"),body=$("m-body"),st=null;
+ function setY(y){sh.style.transform=y>0?"translateY("+y+"px)":"";vl.style.opacity=y>0?String(Math.max(0,1-y/Math.max(300,sh.offsetHeight||600))):""}
+ function start(e){
+  if(!sh.classList.contains("open")||!e.touches||e.touches.length!==1)return;
+  var t=e.touches[0],el=e.target,inBody=body.contains(el);
+  if(inBody&&(body.scrollTop>1||(el.closest&&el.closest("canvas,input,select,textarea,.nodrag"))))return;
+  st={y:t.clientY,x:t.clientX,ly:t.clientY,lt:Date.now(),dy:0,vel:0,drag:false,inBody:inBody};
+ }
+ function move(e){
+  if(!st||!e.touches||e.touches.length!==1)return;
+  var t=e.touches[0],dy=t.clientY-st.y,dx=t.clientX-st.x;
+  if(!st.drag){
+   if(Math.abs(dx)>10&&Math.abs(dx)>Math.abs(dy)){st=null;return}
+   if(dy<-6){st=null;return}
+   if(dy<=8)return;
+   if(st.inBody&&body.scrollTop>1){st=null;return}
+   st.drag=true;sh.classList.add("dragging");vl.style.transition="none";
+  }
+  if(e.cancelable)e.preventDefault();
+  var now=Date.now();st.vel=(t.clientY-st.ly)/Math.max(1,now-st.lt);st.ly=t.clientY;st.lt=now;st.dy=Math.max(0,dy-8);setY(st.dy);
+ }
+ function end(){
+  if(!st)return;var s=st;st=null;if(!s.drag)return;
+  sh.classList.remove("dragging");vl.style.transition="";
+  var h=sh.offsetHeight||600;
+  if(s.dy>Math.min(130,h*.22)||s.vel>0.6){
+   sh.style.transition="transform .2s ease-out";sh.style.transform="translateY("+(h+40)+"px)";vl.style.opacity="0";
+   setTimeout(function(){sh.style.transition="";sh.style.transform="";vl.style.opacity="";closeSheet(false)},210);
+  }else{sh.style.transition="transform .22s cubic-bezier(.2,.8,.2,1)";setY(0);setTimeout(function(){sh.style.transition=""},240)}
+ }
+ sh.addEventListener("touchstart",start,{passive:true});
+ sh.addEventListener("touchmove",move,{passive:false});
+ sh.addEventListener("touchend",end,{passive:true});
+ sh.addEventListener("touchcancel",end,{passive:true});
+})();
 
 setWV(APP.store("wv")&&WBOX[APP.store("wv")]?APP.store("wv"):"sig");
 })();
