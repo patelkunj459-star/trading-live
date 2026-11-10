@@ -228,6 +228,56 @@ button{font:inherit;color:inherit}
 .sd-news .nw{margin:0 0 8px}
 @media (prefers-reduced-motion:reduce){.spin{animation:none}}
 
+/* ===== World tab ===== */
+#n-seg button{font-size:12.5px;padding:0 2px}
+.wh{display:flex;justify-content:space-between;gap:8px;margin:2px 16px 8px;font-size:12px;color:var(--dim)}
+.tc{margin:0 12px 10px;background:rgba(130,150,255,.06);border:1px solid var(--line);border-radius:16px;padding:12px 14px;cursor:pointer}
+.tc:active{background:rgba(130,150,255,.11)}
+.tc .hd{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.tc .tt{font-weight:700;font-size:15px;line-height:1.25}
+.hn{flex:none;min-width:34px;text-align:center;font-weight:800;font-size:15px;line-height:1.2;padding:2px 8px;border-radius:999px;border:1px solid}
+.hn.cool{color:var(--call);border-color:rgba(92,200,255,.4);background:rgba(92,200,255,.08)}
+.hn.warm{color:var(--amber);border-color:rgba(255,181,71,.5);background:rgba(255,181,71,.1)}
+.hn.hot{color:var(--down);border-color:rgba(255,92,138,.5);background:rgba(255,92,138,.1)}
+.bar{height:5px;border-radius:3px;background:rgba(130,150,255,.12);margin:9px 0 7px;overflow:hidden}
+.bar i,.hs .b i{display:block;height:100%;border-radius:3px}
+.bar i.cool,.hs .b i.cool{background:var(--call)}.bar i.warm,.hs .b i.warm{background:var(--amber)}.bar i.hot,.hs .b i.hot{background:var(--down)}
+.tc .mt{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:12.5px;color:var(--dim)}
+.pxp{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;border:1px solid}
+.pxp.ok{color:var(--up);border-color:rgba(62,240,208,.4);background:rgba(62,240,208,.08)}
+.pxp.wait{color:var(--amber);border-color:rgba(255,181,71,.5);background:rgba(255,181,71,.08)}
+.pxp.bad{color:var(--down);border-color:rgba(255,92,138,.45);background:rgba(255,92,138,.08)}
+.pxp.mv{color:var(--put);border-color:rgba(181,140,255,.45);background:rgba(181,140,255,.08)}
+.tkl{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}
+.tkl .lb{font-size:11.5px;font-weight:650;color:var(--faint);margin-right:2px}
+.tkl button{height:28px;padding:0 9px;border-radius:8px;border:1px solid;font-size:12.5px;font-weight:700;background:none}
+.tkl button.b{color:var(--up);border-color:rgba(62,240,208,.35);background:rgba(62,240,208,.07)}
+.tkl button.r{color:var(--down);border-color:rgba(255,92,138,.4);background:rgba(255,92,138,.07)}
+.tkl button.pin{color:var(--call);border-color:rgba(92,200,255,.4);background:rgba(92,200,255,.07)}
+.tkl button em{font-style:normal;font-weight:600;font-size:11.5px;margin-left:3px}
+.tkl.big{margin-top:0}
+.qlist{display:flex;flex-wrap:wrap;gap:8px;margin:0 12px 6px}
+.qlist .q{display:flex;gap:8px;align-items:center;padding:7px 11px;border-radius:999px;border:1px solid var(--line);background:rgba(130,150,255,.05);font-size:12.5px;color:var(--dim)}
+.qlist .q b{color:var(--faint)}
+.kv3{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
+.kv3 small{display:block;color:var(--dim);font-size:11.5px}.kv3 b{font-size:15px}
+.ckt{padding:8px 12px}
+.ckh,.ckr{display:grid;grid-template-columns:1.5fr .7fr .7fr .9fr;gap:6px;align-items:baseline;padding:6px 0;font-size:13px}
+.ckh{color:var(--faint);font-size:11.5px;font-weight:650}.ckr{border-top:1px solid var(--line)}
+.ckr span:not(:first-child),.ckh span:not(:first-child),.ckr b{text-align:right}
+.hsl{padding:6px 14px}
+.hs{display:grid;grid-template-columns:1fr 90px 30px;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--line)}.hs:first-child{border-top:0}
+.hs .n{font-weight:650}.hs .b{height:5px;border-radius:3px;background:rgba(130,150,255,.12);overflow:hidden}.hs .w{text-align:right;color:var(--dim);font-size:12.5px}
+.ar{margin:0 12px 10px;background:rgba(130,150,255,.06);border:1px solid var(--line);border-radius:14px;padding:11px 13px}
+.ar .wf{font-size:14.5px;margin-bottom:4px}
+.ar .wf .it{margin-left:6px;font-size:11px;font-weight:700;color:var(--amber);border:1px solid rgba(255,181,71,.45);border-radius:999px;padding:1px 7px}
+.ar .t{display:block;color:var(--dim);font-size:13px;line-height:1.35;text-decoration:none}
+.wbox{margin:10px 0;padding:9px 12px;border-radius:12px;border:1px solid;font-size:13px;line-height:1.4}
+.wbox b{display:block;font-size:13.5px}.wbox span{display:block;color:var(--dim)}
+.wbox.mid{border-color:var(--line);background:rgba(130,150,255,.06)}
+.wbox.pos{border-color:rgba(62,240,208,.4);background:rgba(62,240,208,.06)}.wbox.neg{border-color:rgba(255,92,138,.45);background:rgba(255,92,138,.06)}
+@media (max-width:340px){.hs{grid-template-columns:1fr 60px 28px}.tc{padding:11px 12px}}
+
 </style></head>
 <div id="app">
  <div id="views">
@@ -295,13 +345,17 @@ button{font:inherit;color:inherit}
    </div>
   </section>
 
-  <section class="view" id="v-news" aria-label="News">
+  <section class="view" id="v-news" aria-label="World">
    <div class="mh" id="mh-news"></div>
-   <div class="seg" id="n-seg" role="group"><button data-v="news" aria-pressed="true">Headlines</button><button data-v="src" aria-pressed="false">Where it comes from</button></div>
-   <div class="chips" id="n-filter" role="group" aria-label="Headline type">
+   <div class="seg" id="n-seg" role="group" aria-label="World sections"><button data-v="sig" aria-pressed="true">Signals</button><button data-v="oil" aria-pressed="false">Oil</button><button data-v="war" aria-pressed="false">War</button><button data-v="news" aria-pressed="false">News</button><button data-v="src" aria-pressed="false">Feeds</button></div>
+   <div class="chips" id="w-chips" role="group" aria-label="Signal type"></div>
+   <div class="chips hide" id="n-filter" role="group" aria-label="Headline type">
     <button data-f="all" aria-pressed="true">All</button><button data-f="stock" aria-pressed="false">Stocks</button><button data-f="market" aria-pressed="false">Markets</button><button data-f="world" aria-pressed="false">World</button>
    </div>
-   <div class="scroll" id="news"></div>
+   <div class="scroll" id="wsig"></div>
+   <div class="scroll hide" id="woil"></div>
+   <div class="scroll hide" id="wwar"></div>
+   <div class="scroll hide" id="news"></div>
    <div class="scroll hide" id="src"></div>
   </section>
  </div>
@@ -311,7 +365,7 @@ button{font:inherit;color:inherit}
   <button id="t-scan" role="tab" aria-selected="false" data-t="scan"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><path d="M12 12l6.5-6"/></svg>Scan</button>
   <button id="t-stocks" role="tab" aria-selected="false" data-t="stocks"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg>Stocks</button>
   <button id="t-map" role="tab" aria-selected="false" data-t="map"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3.2 3 3.2 15 0 18M12 3c-3.2 3-3.2 15 0 18"/></svg>Map</button>
-  <button id="t-news" role="tab" aria-selected="false" data-t="news"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 9h8M8 12.5h8M8 16h5"/></svg>News</button>
+  <button id="t-news" role="tab" aria-selected="false" data-t="news"><svg viewBox="0 0 24 24"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg>World</button>
  </nav>
 </div>
 
@@ -603,7 +657,7 @@ function kindOf(name){
 
 
 /* ---------- state ---------- */
-var SNAP=null,U=null,NEWS={items:[],sources:{}},SHIPS=null,BOARD={market:{},cross:{}},PICKS=[],HELD={},CHART={},INFO={};
+var SNAP=null,INTEL=null,U=null,NEWS={items:[],sources:{}},SHIPS=null,BOARD={market:{},cross:{}},PICKS=[],HELD={},CHART={},INFO={};
 var EXT={},PEND={},FAIL={},seenMsg={};
 var snapId="",snapT=0,loading=false,queued=null,errMsg="",conn=false,es=null,ver=0,noSnap=false;
 var sel=-1,pickRank=new Map(),seenNews=null;
@@ -682,7 +736,7 @@ function ingest(j,m){
  SNAP=j;snapId=m.id;snapT=j.t||m.time||Math.floor(Date.now()/1000);errMsg="";noSnap=false;ver++;
  NEWS=j.news&&Array.isArray(j.news.items)?j.news:{items:[],sources:{}};
  NEWS.items.forEach(function(it){it._g=undefined});
- SHIPS=j.ships||null;BOARD=j.board||{market:{},cross:{}};PICKS=Array.isArray(j.picks)?j.picks:[];HELD=j.held||{};CHART=j.ch||{};INFO=j.info||{};
+ INTEL=j.intel&&Array.isArray(j.intel.th)?j.intel:null;SHIPS=j.ships||null;BOARD=j.board||{market:{},cross:{}};PICKS=Array.isArray(j.picks)?j.picks:[];HELD=j.held||{};CHART=j.ch||{};INFO=j.info||{};
  rankPicks();buildGalaxy();
  sel=prev&&idx.has(prev)?idx.get(prev):-1;
  if(sel<0&&n){var first=null;pickRank.forEach(function(r,s){if(r===1)first=s});sel=first&&idx.has(first)?idx.get(first):topByVolume()}
@@ -728,7 +782,7 @@ function renderStatus(){
 }
 function renderAll(){
  var t=APP.tab;
- if(t==="scan")renderScan();else if(t==="stocks")renderStocks();else if(t==="map")renderMapText();else if(t==="news")renderNews();
+ if(t==="scan")renderScan();else if(t==="stocks")renderStocks();else if(t==="map")renderMapText();else if(t==="news")renderWorld();
  ensureLoop();
 }
 document.addEventListener("apptab",function(e){
@@ -1280,8 +1334,6 @@ function renderNews(){
  box.scrollTop=top;renderSources();
 }
 $("n-filter").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;NEWSF=b.dataset.f;Array.prototype.forEach.call(this.children,function(x){x.setAttribute("aria-pressed",x===b?"true":"false")});$("news").scrollTop=0;renderNews()});
-$("n-seg").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;NEWSV=b.dataset.v;Array.prototype.forEach.call(this.children,function(x){x.setAttribute("aria-pressed",x===b?"true":"false")});
- $("news").classList.toggle("hide",NEWSV!=="news");$("src").classList.toggle("hide",NEWSV!=="src");$("n-filter").classList.toggle("hide",NEWSV!=="news")});
 function newsClick(e){
  var b=e.target.closest("button");if(!b)return;
  if(b.dataset.sym&&U&&U.idx.has(b.dataset.sym)){openStock(U.idx.get(b.dataset.sym))}
@@ -1338,7 +1390,7 @@ var SKEL='<div class="sd-h"><div class="sy" id="sd-sy"></div><div class="nm2" id
  '<div class="sd-p"><b id="sd-p"></b><span id="sd-c"></span></div><div class="verdict" id="sd-v"></div>'+
  '<div class="rng" id="sd-rng" role="group" aria-label="Chart range"><button data-r="1D">1D</button><button data-r="5D">5D</button><button data-r="3M">3M</button><button data-r="1Y">1Y</button></div>'+
  '<div class="chartbox" id="sd-cb"><canvas id="sd-cv"></canvas><div class="cm hide" id="sd-cm"></div></div><div class="ohlc" id="sd-oh"></div>'+
- '<div class="sd-why" id="sd-why"></div><div class="kv2" id="sd-kv"></div>'+
+ '<div class="sd-why" id="sd-why"></div><div id="sd-wd"></div><div class="kv2" id="sd-kv"></div>'+
  '<div class="sh2" id="sd-oph"></div><div id="sd-opt"></div><div class="sh2" id="sd-nh">Headlines that mention it</div><div class="sd-news" id="sd-news"></div>';
 function openStock(i){
  if(!U||i==null||i<0||i>=U.n)return;
@@ -1390,6 +1442,7 @@ function fillStock(keep){
  var ns=NEWS.items.filter(function(it){return(it.syms||[]).indexOf(sym)>=0}).slice(0,5);
  $("sd-nh").classList.toggle("hide",!ns.length);
  $("sd-news").innerHTML=ns.map(function(it){return newsCard(it,0,{nopin:false})}).join("");
+ fillWorldBox(sym);
  if(keep){fillChart();fillOpts()}
 }
 function sizeChart(){
@@ -1492,6 +1545,141 @@ document.addEventListener("appready",function(){
 });
 document.addEventListener("appfail",function(e){errMsg=e.detail;renderStatus();renderAll()});
 renderStatus();
+
+/* ---------- the World tab: what is happening in the world, and which stocks it touches ---------- */
+var WV="sig",WG="all";
+var WGROUPS=[["all","All"],["energy","Oil & ships"],["war","War"],["metals","Gold & metals"],["tech","Tech"],["money","Money"],["crypto","Crypto"],["other","Other"]];
+var WBOX={sig:"wsig",oil:"woil",war:"wwar",news:"news",src:"src"};
+var BOTTXT="When a story like this is hot, the bot moves the stocks it helps up its shortlist (by 35% at most), and skips the ones it hurts. It still only buys what is already moving the right way with a tight buy/sell gap, so the story changes the order, not the rules.";
+function minAgo(m){return m<2?"now":m<90?Math.round(m)+"m":m<1440?Math.round(m/60)+"h":Math.round(m/1440)+"d"}
+function heatCol(h){return h>=65?"hot":h>=35?"warm":"cool"}
+function themeById(id){if(!INTEL)return null;for(var i=0;i<INTEL.th.length;i++)if(INTEL.th[i].id===id)return INTEL.th[i];return null}
+function chgOf(sym){if(!U||!U.idx.has(sym))return null;var c=U.chg[U.idx.get(sym)];return isFinite(c)?c:null}
+function pxPill(cf){
+ var m={confirmed:["ok","Prices agree"],waiting:["wait","Prices have not moved yet"],against:["bad","Prices disagree"],moved:["mv","Already moved a lot"]}[cf&&cf[0]];
+ return m?'<span class="pxp '+m[0]+'">'+m[1]+"</span>":"";
+}
+function tkBtns(list,cls,max){
+ return(list||[]).filter(function(s){return U&&U.idx.has(s)}).slice(0,max||8).map(function(s){
+  var c=chgOf(s);return'<button class="'+cls+'" data-sym="'+esc(s)+'">'+esc(s)+(c==null?"":' <em class="'+chgCls(c)+'">'+fmtC(c)+"</em>")+"</button>"}).join("");
+}
+function tkLine(label,list,cls,max){var b=tkBtns(list,cls,max);return b?'<div class="tkl"><span class="lb">'+label+"</span>"+b+"</div>":""}
+function themeCard(t){
+ var tr=t.tr>0?'<span class="amber">▲ rising</span>':t.tr<0?'<span class="dim">▼ fading</span>':"";
+ return'<div class="tc" data-th="'+esc(t.id)+'" role="button" tabindex="0"><div class="hd"><span class="tt">'+esc(t.t)+'</span><span class="hn '+heatCol(t.h)+'">'+t.h+"</span></div>"+
+  '<div class="bar"><i class="'+heatCol(t.h)+'" style="width:'+Math.max(3,t.h)+'%"></i></div>'+
+  '<div class="mt"><span>'+t.n+" headline"+(t.n===1?"":"s")+" · "+t.sr+" source"+(t.sr===1?"":"s")+"</span>"+tr+pxPill(t.cf)+"</div>"+
+  tkLine("Helps",t.b,"b",6)+tkLine("Hurts",t.r,"r",6)+"</div>";
+}
+function wEmpty(msg){return'<div class="empty-state"><b>'+(errMsg?esc(errMsg):!SNAP?(noSnap?"Waiting for your PC":"Connecting…"):"No world signals yet")+"</b>"+msg+"</div>"}
+function wHead(){return'<div class="wh"><span>Updated '+esc(agoIso(INTEL.as_of))+' ago</span><span class="faint">every ~10 min on your PC</span></div>'}
+function renderSignals(){
+ var box=$("wsig");
+ if(!INTEL||!INTEL.th){box.innerHTML=wEmpty("Your PC reads the news, wars, oil, gold and robot stories every 10 minutes. It shows up here once the dashboard has run for a minute.");return}
+ var all=INTEL.th.filter(function(t){return WG==="all"||t.g===WG}),act=all.filter(function(t){return t.h>=15}),quiet=all.filter(function(t){return t.h<15});
+ var h=[wHead()];
+ if(!act.length)h.push('<div class="empty-state" style="margin:18px 22px"><b>Nothing hot here right now</b>Quiet is normal. These light up when headlines pile up.</div>');
+ act.slice(0,14).forEach(function(t){h.push(themeCard(t))});
+ if(quiet.length){h.push('<div class="sg">Quiet right now</div><div class="qlist">'+quiet.map(function(t){return'<button class="q" data-th="'+esc(t.id)+'"><span>'+esc(t.t)+'</span><b>'+t.h+"</b></button>"}).join("")+"</div>")}
+ h.push('<div class="note" style="margin:14px 16px 26px">Heat 0-100 is how loud a story is in the last day: more headlines, from more different sources, counted fresher. "Helps" and "Hurts" are the stocks that usually move on it. That is a starting guess, not a promise.</div>');
+ var top=$("wsig").scrollTop;box.innerHTML=h.join("");box.scrollTop=top;
+}
+function priceRow(name,sym){var c=chgOf(sym);var cr=(BOARD.cross||{})[sym];if(cr)return'<div><small>'+esc(name)+"</small><b>"+fmtP(cr.price)+' <span class="'+chgCls(cr.chg)+'">'+fmtC(cr.chg)+"</span></b></div>";
+ return c==null?"":"<div><small>"+esc(name)+'</small><b><span class="'+chgCls(c)+'">'+fmtC(c)+"</span></b></div>"}
+function renderOil(){
+ var box=$("woil");
+ if(!INTEL||!INTEL.th){box.innerHTML=wEmpty("Oil prices and ship counts appear here once your PC has sent the first world update.");return}
+ var h=[wHead()];
+ var rows=[priceRow("Oil fund (USO)","USO"),priceRow("Brent fund (BNO)","BNO"),priceRow("Gas fund (UNG)","UNG"),priceRow("Energy stocks (XLE)","XLE")].join("");
+ if(rows)h.push('<div class="sg">Oil right now</div><div class="card kv3">'+rows+"</div>");
+ var ids=["oil_supply_risk","oil_glut","natgas_lng","shipping_disruption"];
+ h.push('<div class="sg">What the world is saying about oil</div>');
+ ids.forEach(function(id){var t=themeById(id);if(t)h.push(themeCard(t))});
+ h.push('<div class="sg">Ships at the chokepoints</div>');
+ var ais=INTEL.oil&&INTEL.oil.ais,ck=(INTEL.oil&&INTEL.oil.ck)||[];
+ if(!ais||!ais.enabled)h.push('<div class="card note">Live ship tracking is off. It needs a free key from aisstream.io, typed into the .env file on your PC. Until then the oil signals above come from headlines only.</div>');
+ else{
+  var ok=ck.filter(function(c){return c[1]>0});
+  h.push('<div class="card ckt"><div class="ckh"><span>Place</span><span>Tankers</span><span>Normal</span><span>Change</span></div>'+ck.map(function(c){
+   var chg=c[4];return'<div class="ckr"><span>'+esc(c[0])+"</span><b>"+c[2]+"</b><span>"+(c[3]==null?"–":Math.round(c[3]))+'</span><span class="'+(chg==null?"dim":chg<=-40?"down":chg>=40?"amber":"dim")+'">'+(chg==null?"learning":(chg>0?"+":"")+chg+"%")+"</span></div>"}).join("")+"</div>"+
+   '<div class="note" style="margin:8px 16px 0">'+(ais.connected?"Tracking "+fmtN((SHIPS&&SHIPS.count)||0)+" ships. ":"Connecting to the ship feed. ")+(ok.length?"":"No ships heard near the chokepoints yet. ")+'"Normal" is learned over about 5 hours of watching, so changes appear after that. Coverage near some coasts is patchy; a big drop is a clue, not proof.</div>');
+ }
+ var oil=themeById("oil_supply_risk");
+ if(oil&&oil.b.length)h.push('<div class="sg">Oil stocks right now</div><div class="card">'+tkLine("",oil.b,"b",12).replace('<span class="lb"></span>',"")+"</div>");
+ h.push('<div class="note" style="margin:14px 16px 26px">Oil stories usually lift producers and tankers and hurt airlines and cruise lines. Falling oil does the reverse.</div>');
+ var top=box.scrollTop;box.innerHTML=h.join("");box.scrollTop=top;
+}
+function renderWar(){
+ var box=$("wwar");
+ if(!INTEL||!INTEL.th){box.innerHTML=wEmpty("Hot spots and weapons deals appear here once your PC has sent the first world update.");return}
+ var h=[wHead()],hot=INTEL.hot||[];
+ h.push('<div class="sg">Where the news is hottest</div>');
+ h.push(hot.length?'<div class="card hsl">'+hot.map(function(p){return'<div class="hs"><span class="n">'+esc(p[0])+'</span><span class="b"><i class="'+heatCol(p[4])+'" style="width:'+Math.max(4,p[4])+'%"></i></span><span class="w">'+p[3]+"</span></div>"}).join("")+"</div>":'<div class="card note">No conflict hot spots in the headlines right now.</div>');
+ h.push('<div class="sg">Weapons deals in the news</div>');
+ var arms=INTEL.arms||[],am=themeById("arms_exports"),def=am?am.b:[];
+ if(!arms.length)h.push('<div class="card note">No arms deals in the headlines right now.</div>');
+ arms.forEach(function(a){
+  var who=a.f&&a.t?"<b>"+esc(a.f)+"</b> → <b>"+esc(a.t)+"</b>":a.t?"<b>"+esc(a.t)+"</b> is buying":a.f?"<b>"+esc(a.f)+"</b> is selling":"<b>"+esc((a.c||[]).join(" · "))+"</b>";
+  h.push('<div class="ar"><div class="wf">'+who+' <span class="it">'+esc(a.i)+"</span></div>"+(a.u?'<a class="t" href="'+esc(a.u)+'" target="_blank" rel="noopener noreferrer">'+esc(a.ti)+"</a>":'<span class="t">'+esc(a.ti)+"</span>")+
+   tkLine("Country funds",a.e,"b",3)+tkLine("Defense makers",def,"b",5)+"</div>");
+ });
+ h.push('<div class="sg">Themes</div>');
+ ["war_escalation","ceasefire_peace","arms_exports","space_defense_tech","chip_export_controls"].forEach(function(id){var t=themeById(id);if(t)h.push(themeCard(t))});
+ h.push('<div class="note" style="margin:14px 16px 26px">A weapons sale usually helps the makers (and the buyer\'s country fund). Direction is only shown when the headline makes it clear who sells to whom.</div>');
+ var top=box.scrollTop;box.innerHTML=h.join("");box.scrollTop=top;
+}
+function renderWorld(){
+ if(WV==="sig")renderSignals();else if(WV==="oil")renderOil();else if(WV==="war")renderWar();else if(WV==="news")renderNews();else renderSources();
+}
+function setWV(v){
+ WV=v;APP.store("wv",v);
+ Array.prototype.forEach.call($("n-seg").children,function(x){x.setAttribute("aria-pressed",x.dataset.v===v?"true":"false")});
+ Object.keys(WBOX).forEach(function(k){$(WBOX[k]).classList.toggle("hide",k!==v)});
+ $("n-filter").classList.toggle("hide",v!=="news");$("w-chips").classList.toggle("hide",v!=="sig");
+ renderWorld();
+}
+$("n-seg").addEventListener("click",function(e){var b=e.target.closest("button");if(b)setWV(b.dataset.v)});
+$("w-chips").innerHTML=WGROUPS.map(function(g){return'<button data-g="'+g[0]+'" aria-pressed="'+(g[0]==="all"?"true":"false")+'">'+g[1]+"</button>"}).join("");
+$("w-chips").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;WG=b.dataset.g;Array.prototype.forEach.call(this.children,function(x){x.setAttribute("aria-pressed",x===b?"true":"false")});$("wsig").scrollTop=0;renderSignals()});
+function worldClick(e){
+ var s=e.target.closest("button[data-sym]");
+ if(s){if(U&&U.idx.has(s.dataset.sym))openStock(U.idx.get(s.dataset.sym));return}
+ var c=e.target.closest("[data-th]");if(c)openTheme(c.dataset.th);
+}
+["wsig","woil","wwar"].forEach(function(id){$(id).addEventListener("click",worldClick);$(id).addEventListener("keydown",function(e){if((e.key==="Enter"||e.key===" ")&&e.target.dataset&&e.target.dataset.th){e.preventDefault();openTheme(e.target.dataset.th)}})});
+function openTheme(id){
+ var t=themeById(id);if(!t)return;
+ sheet.kind="theme";sheet.sym=null;
+ var gname=(INTEL.g&&INTEL.g[t.g])||"";
+ var bm=t.cf&&t.cf[1],rm=t.cf&&t.cf[2];
+ var px=[];if(bm!=null)px.push("Stocks it helps: <b class=\""+chgCls(bm)+'">'+fmtC(bm)+"</b> today (typical)");if(rm!=null)px.push("Stocks it hurts: <b class=\""+chgCls(rm)+'">'+fmtC(rm)+"</b> today (typical)");
+ var pxText={confirmed:"Prices are moving the way the story says.",waiting:"The story is hot but prices have not moved yet. This is the one to watch.",against:"Prices are moving the other way. The story may be old news or already priced in.",moved:"Prices have already moved a lot the way the story says. It may be priced in.",quiet:"Not hot enough to matter yet.",unknown:"No prices for these stocks right now."}[t.cf&&t.cf[0]]||"";
+ var ev=(t.ev||[]).map(function(e){return'<div class="nw"><div class="m"><span class="s">'+esc(e[1])+"</span><span>"+minAgo(e[0])+"</span></div>"+(e[3]?'<a class="t" href="'+esc(e[3])+'" target="_blank" rel="noopener noreferrer">'+esc(e[2])+"</a>":'<span class="t">'+esc(e[2])+"</span>")+"</div>"}).join("");
+ var pins=(t.pl||[]).map(function(n){return'<button class="pin" data-pin="'+esc(n)+'">◉ '+esc(n)+"</button>"}).join("");
+ $("m-body").innerHTML='<div class="sd-h"><div class="sy" style="font-size:20px">'+esc(t.t)+'</div><div class="nm2">'+esc(gname)+" · heat "+t.h+" of 100"+(t.sg?" · "+t.sg.toFixed(1)+"x normal":"")+"</div></div>"+
+  '<div class="sd-why" style="margin-top:10px">'+esc(t.w)+"</div>"+
+  '<div class="sh2">Is the market agreeing?</div><div class="card" style="margin:0">'+(pxText?"<div>"+esc(pxText)+"</div>":"")+(px.length?'<div class="note" style="margin-top:6px">'+px.join("<br>")+"</div>":"")+"</div>"+
+  (t.b.length?'<div class="sh2">Stocks it usually helps</div><div class="tkl big">'+tkBtns(t.b,"b",12)+"</div>":"")+(t.r.length?'<div class="sh2">Stocks it usually hurts</div><div class="tkl big">'+tkBtns(t.r,"r",12)+"</div>":"")+
+  (ev?'<div class="sh2">Headlines behind it</div><div class="sd-news">'+ev+"</div>":'<div class="sh2">Headlines behind it</div><div class="note">Nothing recent.</div>')+
+  (pins?'<div class="sh2">Where</div><div class="tkl big">'+pins+"</div>":"")+
+  '<div class="sh2">What the bot does with it</div><div class="note">'+BOTTXT+"</div>";
+ $("m-body").onclick=function(e){
+  var s=e.target.closest("button[data-sym]");if(s&&U&&U.idx.has(s.dataset.sym)){openStock(U.idx.get(s.dataset.sym));return}
+  var p=e.target.closest("button[data-pin]");if(p)showOnMap(p.dataset.pin);
+ };
+ showSheet();
+}
+function fillWorldBox(sym){
+ var el=$("sd-wd");if(!el)return;
+ var w=INTEL&&INTEL.tk&&INTEL.tk[sym];
+ if(!w){el.innerHTML="";return}
+ var nm=function(a){return(a||[]).map(function(id){var t=themeById(id);return t?t.t:null}).filter(Boolean)};
+ var up=nm(w[1]),dn=nm(w[2]),net=w[0];
+ el.innerHTML='<div class="wbox '+(net>0?"pos":net<0?"neg":"mid")+'"><b>World signals '+(net>0?"support it":net<0?"work against it":"are mixed")+" ("+(net>0?"+":"")+net+")</b>"+
+  (up.length?"<span>Helped by: "+esc(up.join(" · "))+"</span>":"")+(dn.length?"<span>Hurt by: "+esc(dn.join(" · "))+"</span>":"")+"</div>";
+}
+
+setWV(APP.store("wv")&&WBOX[APP.store("wv")]?APP.store("wv"):"sig");
 })();
 
 APP.start();
