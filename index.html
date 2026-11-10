@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Trading">
 <meta name="theme-color" content="#04050d">
 <title>Trading</title>
@@ -283,7 +283,9 @@ button{font:inherit;color:inherit}
 html{position:fixed;inset:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
 body{position:fixed;inset:0;width:100%;height:100%;overflow:hidden}
 /* a solid bar behind the Dynamic Island / status bar, so nothing slides under the iPhone's blur */
-body::before{content:"";position:fixed;left:0;right:0;top:0;height:calc(env(safe-area-inset-top,0px) + 14px);background:linear-gradient(to bottom,var(--bg0) 0,var(--bg0) calc(100% - 14px),rgba(4,5,13,0) 100%);z-index:60;pointer-events:none}
+body::before{content:"";position:fixed;left:0;right:0;top:0;height:env(safe-area-inset-top,0px);background:var(--bg0);z-index:60;pointer-events:none}
+/* a soft edge just under the status bar, so lists slide away gently instead of being cut off */
+body::after{content:"";position:fixed;left:0;right:0;top:env(safe-area-inset-top,0px);height:18px;background:linear-gradient(to bottom,var(--bg0),rgba(4,5,13,0));z-index:59;pointer-events:none}
 #app{overflow:hidden}
 /* the sheets live inside #app (moved there at start), so they are sized by the app box, not by the browser's idea of the screen */
 #app>#mveil,#app>#veil{position:absolute;inset:0}
@@ -345,6 +347,12 @@ html{background:#070a1a}
 body{background:var(--bg0)}
 @media (orientation:portrait){#tabs{padding-bottom:max(0px,calc(env(safe-area-inset-bottom,0px) - var(--gap,0px)))}}
 
+
+/* ===== Bot tab: the status chip and "updated" time live in their own row above the radar, so nothing is drawn under them and the radar never reaches the status bar ===== */
+:root{--hudh:calc(max(12px,env(safe-area-inset-top,0px)) + 46px)}
+.stage{height:calc(var(--hudh) + min(46vh,390px));min-height:calc(var(--hudh) + 270px)}
+#cv{top:var(--hudh);height:calc(100% - var(--hudh))}
+@media (orientation:portrait){:root{--hudh:calc(max(12px,var(--sat)) + 46px)}}
 
 </style></head>
 <div id="app">
@@ -507,10 +515,16 @@ function nums(){
  var vv=window.visualViewport||null;
  return{ih:window.innerHeight||0,iw:window.innerWidth||0,vh:vv?Math.round(vv.height):0,vt:vv?Math.round(vv.offsetTop):0,vs:vv?Math.round(vv.scale*100)/100:1,
   ch:document.documentElement.clientHeight||0,sw:(window.screen&&screen.width)||0,sh:(window.screen&&screen.height)||0}}
+var probe=document.createElement("div");probe.setAttribute("aria-hidden","true");
+probe.style.cssText="position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)";
+document.body.appendChild(probe);
 var lastH=0,lastGap=-1;
 function fit(){
- var n=nums(),h=Math.max(n.ih,n.vh,n.ch),gap=0;
- if(standalone()&&n.sw&&n.sh){
+ var n=nums(),h=Math.max(n.ih,n.vh,n.ch),gap=0,top=0;
+ try{top=Math.round(parseFloat(getComputedStyle(probe).paddingTop)||0)}catch(e){}
+ // The short page only happens with the translucent status bar (the page then starts at the very top and the phone sizes it a status bar too short).
+ // With the opaque status bar the page starts below the bar, 894 is exactly right, and there is no strip.
+ if(top>0&&standalone()&&n.sw&&n.sh){
   // screen.width/height are the portrait numbers on iPhone
   var land=n.iw>n.ih,full=land?Math.min(n.sw,n.sh):Math.max(n.sw,n.sh);
   if(full>h&&full-h<=140)gap=full-h;
@@ -528,9 +542,6 @@ if(window.visualViewport){visualViewport.addEventListener("resize",soon);visualV
 setInterval(fit,4000);
 
 /* ===== layout readout: triple-tap the top of the screen to see it; the app also reports it (numbers only) so layout bugs can be found without a screenshot ===== */
-var probe=document.createElement("div");probe.setAttribute("aria-hidden","true");
-probe.style.cssText="position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)";
-document.body.appendChild(probe);
 var units=document.createElement("div");units.setAttribute("aria-hidden","true");units.style.cssText="position:fixed;left:0;top:0;width:0;visibility:hidden;pointer-events:none";
 ["100vh","100lvh","100svh","100dvh","-webkit-fill-available"].forEach(function(v){var d=document.createElement("div");d.style.cssText="width:1px;height:"+v;units.appendChild(d)});
 document.body.appendChild(units);
