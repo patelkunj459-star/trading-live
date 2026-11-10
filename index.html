@@ -353,6 +353,9 @@ body{background:var(--bg0)}
 .stage{height:calc(var(--hudh) + min(46vh,390px));min-height:calc(var(--hudh) + 270px)}
 #cv{top:var(--hudh);height:calc(100% - var(--hudh))}
 @media (orientation:portrait){:root{--hudh:calc(max(12px,var(--sat)) + 46px)}}
+/* a closed sheet is not focusable: Tab used to jump into its hidden buttons below the screen and scroll the whole app up */
+#sheet{visibility:hidden;transition:transform .28s cubic-bezier(.2,.8,.2,1),visibility 0s linear .28s}
+#sheet.open{visibility:visible;transition:transform .28s cubic-bezier(.2,.8,.2,1),visibility 0s}
 
 </style></head>
 <div id="app">
@@ -532,8 +535,10 @@ function fit(){
  if(gap!==lastGap){lastGap=gap;document.documentElement.style.setProperty("--gap",gap+"px")}
  if(h>200&&h!==lastH){lastH=h;app.style.height=h+"px";document.documentElement.style.setProperty("--vh",h+"px")}
  if((window.scrollY||window.pageYOffset||0)!==0||(window.scrollX||0)!==0){try{window.scrollTo(0,0)}catch(e){}}
+ if(app.scrollTop||app.scrollLeft){app.scrollTop=0;app.scrollLeft=0}
 }
 var t=null;function soon(){if(t)return;t=setTimeout(function(){t=null;fit()},60)}
+app.addEventListener("scroll",function(){if(app.scrollTop||app.scrollLeft){app.scrollTop=0;app.scrollLeft=0}},{passive:true});   // the app box itself never scrolls (focus on something off-screen used to slide it)
 fit();
 ["resize","orientationchange","pageshow","focus","scroll"].forEach(function(e){window.addEventListener(e,soon,{passive:true})});
 document.addEventListener("visibilitychange",soon);
@@ -2086,7 +2091,8 @@ var OPOS={scan:[.13,.13],world:[.13,.35],ships:[.13,.57],learner:[.13,.84],
  phone:[.89,.09],head:[.8,.3],risk:[.89,.52],broker:[.89,.74]};
 var OGROUPS=[["decide","Decide",["head","risk","broker","phone"]],["desks","Sector desks",["tech","energy","banks","defense","health","crypto"]],["feeds","Gather",["scan","world","ships","learner"]]];
 function oRgba(c,a){return"rgba("+c[0]+","+c[1]+","+c[2]+","+a+")"}
-function oNode(r){return{id:r[0],short:r[1],grp:r[2],state:r[3],task:r[4]||"",heat:r[5]||0,metrics:r[6]||[],roles:r[7],detail:r[8]||[],name:r[9]||r[1]}}
+function oRows(x){return Array.isArray(x)?x.filter(Array.isArray):[]}
+function oNode(r){if(!Array.isArray(r))r=[];return{id:r[0],short:r[1],grp:r[2],state:r[3],task:r[4]||"",heat:r[5]||0,metrics:oRows(r[6]),roles:Array.isArray(r[7])?oRows(r[7]):null,detail:Array.isArray(r[8])?r[8]:[],name:r[9]||r[1]}}
 function oList(){return OFF&&Array.isArray(OFF.n)?OFF.n.map(oNode):[]}
 function oFmtNum(v){return typeof v==="number"?v.toLocaleString():String(v==null?"":v)}
 function oEmpty(){
@@ -2126,7 +2132,7 @@ function drawOffice(now){
  c.fillStyle="rgba(138,147,196,.55)";c.textAlign="center";
  c.fillText("GATHER",OC.byId.scan?OC.byId.scan.x:36,8);c.fillText("SECTOR DESKS",W*.5,8);c.fillText("DECIDE",OC.byId.head&&OC.byId.risk?(OC.byId.head.x+OC.byId.risk.x)/2:W*.85,8);
  // lines
- (OFF.e||[]).forEach(function(e,i){
+ oRows(OFF.e).forEach(function(e,i){
   var A=OC.byId[e[0]],B=OC.byId[e[1]];if(!A||!B)return;
   var p=oEdgePath(A,B),on=e[2]===1,col=OSTATE[A.n.state]||OSTATE.off;
   c.beginPath();c.moveTo(p.ax,p.ay);c.quadraticCurveTo(p.cx,p.cy,p.bx,p.by);
@@ -2184,7 +2190,7 @@ function oRow(n){
 }
 function renderOffice(){
  var em=$("of-empty"),main=$("of-main");if(!em||!main)return;
- if(!OFF||!OFF.n||!OFF.n.length){em.innerHTML=oEmpty();em.classList.remove("hide");main.classList.add("hide");OC.nodes=[];return}
+ if(!OFF||!Array.isArray(OFF.n)||!OFF.n.length){em.innerHTML=oEmpty();em.classList.remove("hide");main.classList.add("hide");OC.nodes=[];return}
  em.classList.add("hide");main.classList.remove("hide");
  var list=oList(),cnt={working:0,idle:0,waiting:0,problem:0,off:0};
  list.forEach(function(n){cnt[n.state]=(cnt[n.state]||0)+1});
@@ -2201,7 +2207,7 @@ function renderOffice(){
   h.push('<div class="sec"><span>'+g[1]+'</span></div><div class="olist">'+rows.map(oRow).join("")+"</div>");
  });
  h.push('<div class="sec"><span>Recent activity</span><span class="faint">newest first</span></div>');
- if(OFF.f&&OFF.f.length)h.push('<div class="ofeed">'+OFF.f.map(function(f){return'<div class="of"><span class="tm">'+esc(clockOf(f[0]))+'</span><span class="who">'+esc(f[1])+'</span><span class="tx">'+esc(f[2])+"</span></div>"}).join("")+"</div>");
+ if(Array.isArray(OFF.f)&&OFF.f.length)h.push('<div class="ofeed">'+oRows(OFF.f).map(function(f){return'<div class="of"><span class="tm">'+esc(clockOf(f[0]))+'</span><span class="who">'+esc(f[1])+'</span><span class="tx">'+esc(f[2])+"</span></div>"}).join("")+"</div>");
  else h.push('<div class="note" style="margin:0 16px">Nothing yet. Trades, blocks and reviews show here as they happen.</div>');
  h.push('<div class="note" style="margin:14px 16px 26px">The desks run on plain code today. The Claude teams (researcher, chart checker, skeptic) are not running yet, so nothing here is AI thinking. This page only reads. It cannot place a trade or change a limit.</div>');
  $("of-rest").innerHTML=h.join("");
@@ -2227,7 +2233,7 @@ function fillOffice(keep){
   h+=n.roles.map(function(r){return'<div class="orole"><i class="rd '+(r[1]==="done"?"on":r[1]==="stale"?"st":"")+'"></i><div><b>'+esc(nm[r[0]]||r[0])+'</b><small>'+esc(r[2]||(r[1]==="not started"?"Not started":r[1]))+"</small></div></div>"}).join("");
  }
  var ins=[],outs=[];
- (OFF.e||[]).forEach(function(e){if(e[1]===n.id)ins.push(e);if(e[0]===n.id)outs.push(e)});
+ oRows(OFF.e).forEach(function(e){if(e[1]===n.id)ins.push(e);if(e[0]===n.id)outs.push(e)});
  var nameOf=function(id){var f=null;oList().forEach(function(x){if(x.id===id)f=x});return f?f.short:id};
  if(ins.length||outs.length){
   h+='<div class="sh2">Who it talks to</div><div class="note">'+(ins.length?"Gets work from "+ins.map(function(e){return"<b>"+esc(nameOf(e[0]))+"</b>"}).join(", ")+". ":"")+(outs.length?"Passes work to "+outs.map(function(e){return"<b>"+esc(nameOf(e[1]))+"</b>"}).join(", ")+".":"")+"</div>";
