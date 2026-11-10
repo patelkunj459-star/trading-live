@@ -69,7 +69,7 @@ html,body{height:100%;background:var(--bg0);color:var(--ink);overscroll-behavior
 body{font:15px/1.35 "Bahnschrift","Segoe UI Variable Display",ui-rounded,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-variant-numeric:tabular-nums;overflow:hidden;-webkit-text-size-adjust:100%}
 button{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--call);outline-offset:2px}
-#app{position:fixed;left:0;right:0;top:0;height:100vh;height:100dvh;display:flex;flex-direction:column}
+#app{position:fixed;left:0;right:0;top:0;bottom:0;display:flex;flex-direction:column}
 #views{flex:1;min-height:0;min-width:0;position:relative}
 .view{position:absolute;inset:0;display:none;flex-direction:column;min-height:0}
 .view.on{display:flex}
@@ -608,6 +608,8 @@ var reduce=matchMedia("(prefers-reduced-motion: reduce)").matches,MOT=reduce?0:1
 var C={up:[62,240,208],down:[255,92,138],amber:[255,181,71],call:[92,200,255],put:[181,140,255],ink:[232,236,255],dim:[138,147,196],faint:[93,102,149]};
 function rgba(c,a){return"rgba("+c[0]+","+c[1]+","+c[2]+","+a+")"}
 var FONT="system-ui,-apple-system,'Segoe UI',Roboto,sans-serif";
+var FUNDS={USO:"Crude oil fund",BNO:"Brent oil fund",UNG:"Natural gas fund",GLD:"Gold fund",SLV:"Silver fund"};
+function fundNames(){var cr=BOARD&&BOARD.cross;if(!cr)return;Object.keys(FUNDS).forEach(function(s){if(cr[s]&&typeof cr[s]==="object")cr[s].name=FUNDS[s]})}
 function fmtP(p){return p==null||!isFinite(p)?"–":p>=1000?p.toLocaleString("en-US",{maximumFractionDigits:2}):p>=1?p.toFixed(2):p.toFixed(4)}
 function fmtC(c){return c==null||!isFinite(c)?"–":(c>0?"+":"")+c.toFixed(2)+"%"}
 function fmtUsd(v){return!v?"–":v>=1e9?"$"+(v/1e9).toFixed(1)+"B":v>=1e6?"$"+(v/1e6).toFixed(1)+"M":v>=1e3?"$"+Math.round(v/1e3)+"K":"$"+Math.round(v)}
@@ -736,7 +738,7 @@ function ingest(j,m){
  SNAP=j;snapId=m.id;snapT=j.t||m.time||Math.floor(Date.now()/1000);errMsg="";noSnap=false;ver++;
  NEWS=j.news&&Array.isArray(j.news.items)?j.news:{items:[],sources:{}};
  NEWS.items.forEach(function(it){it._g=undefined});
- INTEL=j.intel&&Array.isArray(j.intel.th)?j.intel:null;SHIPS=j.ships||null;BOARD=j.board||{market:{},cross:{}};PICKS=Array.isArray(j.picks)?j.picks:[];HELD=j.held||{};CHART=j.ch||{};INFO=j.info||{};
+ INTEL=j.intel&&Array.isArray(j.intel.th)?j.intel:null;SHIPS=j.ships||null;BOARD=j.board||{market:{},cross:{}};fundNames();PICKS=Array.isArray(j.picks)?j.picks:[];HELD=j.held||{};CHART=j.ch||{};INFO=j.info||{};
  rankPicks();buildGalaxy();
  sel=prev&&idx.has(prev)?idx.get(prev):-1;
  if(sel<0&&n){var first=null;pickRank.forEach(function(r,s){if(r===1)first=s});sel=first&&idx.has(first)?idx.get(first):topByVolume()}
@@ -1309,7 +1311,7 @@ function zoomAt(x,y,nz){
 })();
 $("m-chips").addEventListener("click",function(e){var b=e.target.closest("button");if(b)flyTo(b.dataset.v)});
 function renderMapText(){
- var cr=BOARD.cross||{},oil=["USO","BNO","UNG"].filter(function(s){return cr[s]}).map(function(s){return esc(cr[s].name)+" <b>"+fmtP(cr[s].price)+'</b> <span class="'+chgCls(cr[s].chg)+'">'+fmtC(cr[s].chg)+"</span>"});
+ var cr=BOARD.cross||{},oil=["USO","BNO","UNG"].filter(function(s){return cr[s]}).map(function(s){return esc(cr[s].name)+' <span class="'+chgCls(cr[s].chg)+'">'+fmtC(cr[s].chg)+"</span>"});
  var on=SHIPS&&SHIPS.enabled;
  $("m-leg").innerHTML='<span class="sw"></span>Oil routes<br><span class="sw b"></span>Other lanes<br><span class="sw p"></span>News by place'+(on?"<br>Ships: <b>"+fmtN(SHIPS.count||0)+"</b>":"");
  $("m-oil").innerHTML=oil.length?oil.join("<br>"):'<span class="faint">Tap a dot for the news there</span>';
@@ -1529,7 +1531,7 @@ function openPlace(name){
 }
 function openChoke(k){
  sheet.kind="choke";sheet.sym=null;
- var cr=BOARD.cross||{},oil=["USO","BNO"].filter(function(s){return cr[s]}).map(function(s){return esc(cr[s].name)+" <b>"+fmtP(cr[s].price)+'</b> <span class="'+chgCls(cr[s].chg)+'">'+fmtC(cr[s].chg)+"</span>"}).join("<br>");
+ var cr=BOARD.cross||{},oil=["USO","BNO"].filter(function(s){return cr[s]}).map(function(s){return esc(cr[s].name)+' <span class="'+chgCls(cr[s].chg)+'">'+fmtC(cr[s].chg)+"</span>"}).join("<br>");
  $("m-body").innerHTML='<div class="sd-h"><div class="sy">'+esc(k.n)+'</div><div class="nm2">Shipping chokepoint</div></div><div class="sd-why" style="margin-top:12px">'+esc(k.d)+"</div>"+(oil?'<div class="sh2">Oil right now</div><div class="card" style="margin:0">'+oil+"</div>":"")+
   '<div class="note" style="margin-top:12px">The routes on the map are typical lanes drawn by hand. They are not live ship positions.</div>';
  showSheet();
