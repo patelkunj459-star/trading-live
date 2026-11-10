@@ -283,7 +283,7 @@ button{font:inherit;color:inherit}
 html{position:fixed;inset:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
 body{position:fixed;inset:0;width:100%;height:100%;overflow:hidden}
 /* a solid bar behind the Dynamic Island / status bar, so nothing slides under the iPhone's blur */
-body::before{content:"";position:fixed;left:0;right:0;top:0;height:env(safe-area-inset-top,0px);background:var(--bg0);z-index:60;pointer-events:none}
+body::before{content:"";position:fixed;left:0;right:0;top:0;height:calc(env(safe-area-inset-top,0px) + 14px);background:linear-gradient(to bottom,var(--bg0) 0,var(--bg0) calc(100% - 14px),rgba(4,5,13,0) 100%);z-index:60;pointer-events:none}
 #app{overflow:hidden}
 /* the sheets live inside #app (moved there at start), so they are sized by the app box, not by the browser's idea of the screen */
 #app>#mveil,#app>#veil{position:absolute;inset:0}
@@ -340,6 +340,10 @@ body::before{content:"";position:fixed;left:0;right:0;top:0;height:env(safe-area
 .orole{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-top:1px solid var(--line)}
 .orole .rd{margin-top:6px}
 .orole b{display:block;font-size:14.5px}.orole small{display:block;color:var(--dim);font-size:12.5px;line-height:1.4}
+/* the strip of glass below a short page (see shell.js --gap) is filled with the tab-bar colour, and the bar gives up its own bottom padding while it exists */
+html{background:#070a1a}
+body{background:var(--bg0)}
+@media (orientation:portrait){#tabs{padding-bottom:max(0px,calc(env(safe-area-inset-bottom,0px) - var(--gap,0px)))}}
 
 
 </style></head>
@@ -489,7 +493,11 @@ APP.start=function(){
 };
 })();
 
-/* ===== keep the app exactly as tall as the screen (iPhone home-screen apps sometimes report a shorter page after a gesture) ===== */
+/* ===== keep the app exactly as tall as the page the phone really gives us =====
+   Real phone (iPhone 17 Pro Max, 2026-11-10 screen recording + layout readout): the home-screen app reports a page 894 tall on a 956 screen.
+   Anything fixed to the screen is only painted inside those 894, so forcing the app to 956 cut the tab labels off and left a dead strip.
+   So the app is as tall as the page (never taller). The few points below it are filled with the tab-bar colour, and the tab bar
+   drops its own bottom padding for as long as that strip exists (--gap). ===== */
 (function(){
 "use strict";
 var app=document.getElementById("app");if(!app)return;
@@ -499,14 +507,15 @@ function nums(){
  var vv=window.visualViewport||null;
  return{ih:window.innerHeight||0,iw:window.innerWidth||0,vh:vv?Math.round(vv.height):0,vt:vv?Math.round(vv.offsetTop):0,vs:vv?Math.round(vv.scale*100)/100:1,
   ch:document.documentElement.clientHeight||0,sw:(window.screen&&screen.width)||0,sh:(window.screen&&screen.height)||0}}
-var lastH=0;
+var lastH=0,lastGap=-1;
 function fit(){
- var n=nums(),h=Math.max(n.ih,n.vh,n.ch);
+ var n=nums(),h=Math.max(n.ih,n.vh,n.ch),gap=0;
  if(standalone()&&n.sw&&n.sh){
-  // a home-screen app fills the whole screen; screen.width/height are the portrait numbers on iPhone
+  // screen.width/height are the portrait numbers on iPhone
   var land=n.iw>n.ih,full=land?Math.min(n.sw,n.sh):Math.max(n.sw,n.sh);
-  if(full>h&&full-h<=140)h=full;
+  if(full>h&&full-h<=140)gap=full-h;
  }
+ if(gap!==lastGap){lastGap=gap;document.documentElement.style.setProperty("--gap",gap+"px")}
  if(h>200&&h!==lastH){lastH=h;app.style.height=h+"px";document.documentElement.style.setProperty("--vh",h+"px")}
  if((window.scrollY||window.pageYOffset||0)!==0||(window.scrollX||0)!==0){try{window.scrollTo(0,0)}catch(e){}}
 }
@@ -522,10 +531,14 @@ setInterval(fit,4000);
 var probe=document.createElement("div");probe.setAttribute("aria-hidden","true");
 probe.style.cssText="position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)";
 document.body.appendChild(probe);
+var units=document.createElement("div");units.setAttribute("aria-hidden","true");units.style.cssText="position:fixed;left:0;top:0;width:0;visibility:hidden;pointer-events:none";
+["100vh","100lvh","100svh","100dvh","-webkit-fill-available"].forEach(function(v){var d=document.createElement("div");d.style.cssText="width:1px;height:"+v;units.appendChild(d)});
+document.body.appendChild(units);
+function unitNums(){try{return Array.prototype.map.call(units.children,function(d){return d.offsetHeight})}catch(e){return[]}}
 function px(v){return Math.round(parseFloat(v)||0)}
 function snapshot(){
  var n=nums(),cs=getComputedStyle(probe),ar=app.getBoundingClientRect(),tb=document.getElementById("tabs"),tr=tb?tb.getBoundingClientRect():{top:0,bottom:0},sh=document.getElementById("msheet"),sr=sh?sh.getBoundingClientRect():{top:0,bottom:0};
- return{n:n,sa:standalone(),satop:px(cs.paddingTop),sabot:px(cs.paddingBottom),at:Math.round(ar.top),ab:Math.round(ar.bottom),tt:Math.round(tr.top),tbm:Math.round(tr.bottom),
+ return{n:n,u:unitNums(),oh:window.outerHeight||0,ah:(window.screen&&screen.availHeight)||0,gap:lastGap,sa:standalone(),satop:px(cs.paddingTop),sabot:px(cs.paddingBottom),at:Math.round(ar.top),ab:Math.round(ar.bottom),tt:Math.round(tr.top),tbm:Math.round(tr.bottom),
   sy:Math.round(window.scrollY||0),dh:document.documentElement.scrollHeight,sheet:sh&&sh.classList.contains("open")?[Math.round(sr.top),Math.round(sr.bottom)]:null,tab:(window.APP&&APP.tab)||""}}
 var box=null,timer=null;
 function show(){
@@ -1968,7 +1981,7 @@ function computeConf(){
  CONF.forEach(function(cf){cf.items=[];cf.fresh=false;cf.k=0;cf.a=0;cf.sx=null});
  (NEWS&&NEWS.items||[]).forEach(function(it,ix){
   var t=new Date(it.t).getTime();if(!(now-t<72*36e5))return;
-  var tx=(it.title||"")+" "+(it.sum||"");if(!WARW.test(tx))return;
+  var ti=it.title||"",tx=ti+" "+(it.sum||"");if(!WARW.test(ti))return;   // the war word has to be in the headline itself, not only its summary
   CONF.forEach(function(cf){if(cf.re.test(tx)&&!(cf.no&&cf.no.test(tx))){cf.items.push(ix);if(now-t<90*60e3)cf.fresh=true}});
  });
  CONF.forEach(function(cf){cf.k=cf.items.length;cf.a=cf.k?Math.min(.34,.1+cf.k*.03):0;if(cf.k)sig.push(cf.id+":"+Math.round(cf.a*100))});
