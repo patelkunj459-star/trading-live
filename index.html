@@ -315,7 +315,7 @@ body::after{content:"";position:fixed;left:0;right:0;top:env(safe-area-inset-top
 .op.warn{color:var(--amber);border-color:rgba(255,181,71,.5);background:rgba(255,181,71,.08)}
 .op.bad{color:var(--down);border-color:rgba(255,92,138,.5);background:rgba(255,92,138,.08)}
 .op.s-working{color:var(--up)}.op.s-idle{color:var(--call)}.op.s-waiting{color:var(--amber)}.op.s-problem{color:var(--down)}.op.s-off{color:var(--faint)}
-.off-net{position:relative;margin:0 6px;height:272px}
+.off-net{position:relative;margin:0 6px;height:360px}
 #off-cv{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y}
 .of-age{margin:0 16px;font-size:11.5px;color:var(--faint);text-align:center}
 .olist{margin:0 12px;background:rgba(130,150,255,.05);border:1px solid var(--line);border-radius:16px;overflow:hidden}
@@ -327,6 +327,7 @@ body::after{content:"";position:fixed;left:0;right:0;top:env(safe-area-inset-top
 .orow.s-off .od{box-shadow:none}
 .orow .ol{flex:1;min-width:0}
 .orow .ol b{display:block;font-size:15px;font-weight:650}
+.orow .oai{display:inline-block;font-size:10px;line-height:1;color:#b58cff;border:1px solid rgba(181,140,255,.55);border-radius:6px;padding:2px 4px;margin-left:7px;font-weight:650;vertical-align:2px}
 .orow .ol small{display:block;color:var(--dim);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
 .orow .ot{flex:none;font-size:11.5px;font-weight:650;color:var(--c)}
 .orow .oc{flex:none;display:flex;gap:3px}
@@ -2086,13 +2087,17 @@ function openConflict(cf){
 var OC={cv:$("off-cv"),ctx:null,w:0,h:0,dpr:1,raf:0,last:0,nodes:[],byId:{},hit:null};
 var OSTATE={working:[62,240,208],idle:[92,200,255],waiting:[255,181,71],problem:[255,92,138],off:[93,102,149]};
 var OSTATE_TXT={working:"working",idle:"idle",waiting:"waiting",problem:"problem",off:"off"};
-var OPOS={scan:[.13,.13],world:[.13,.35],ships:[.13,.57],learner:[.13,.84],
- tech:[.5,.07],energy:[.5,.235],banks:[.5,.4],defense:[.5,.565],health:[.5,.73],crypto:[.5,.895],
- phone:[.89,.09],head:[.8,.3],risk:[.89,.52],broker:[.89,.74]};
-var OGROUPS=[["decide","Decide",["head","risk","broker","phone"]],["desks","Sector desks",["tech","energy","banks","defense","health","crypto"]],["feeds","Gather",["scan","world","ships","learner"]]];
+/* where each bot sits. Left: gather and read the news. Middle: the six desks. Top right: decide. Bottom right: learn and improve.
+   Placed by a script so no line runs through another bot's dot on 348 to 428 px wide phones (Nov 22). */
+var OPOS={scan:[0.0,0.02],world:[0.0,0.3],ships:[0.0,0.58],memory:[0.18,0.14],newscheck:[0.18,0.42],newsreader:[0.18,0.7],tech:[0.4,0.0],energy:[0.4,0.12],banks:[0.4,0.24],defense:[0.4,0.36],health:[0.4,0.48],crypto:[0.4,0.6],ideas:[0.575,0.704],head:[0.753,0.42],money:[0.765,0.08],risk:[0.95,0.24],phone:[0.949,0.054],broker:[0.975,0.42],chat:[0.71,0.22],learner:[0.975,0.76],shadow:[0.905,0.62],predict:[0.928,1.0],judge:[0.755,0.7],tuner:[0.595,0.86],fixer:[0.595,1.0],boss:[0.779,0.943]};
+var ODESKS=["tech","energy","banks","defense","health","crypto"];
+var OGROUPS=[["decide","Decide",["head","money","risk","broker","phone","chat"]],["desks","Sector desks",["tech","energy","banks","defense","health","crypto","ideas"]],
+ ["news","Read the news",["newscheck","newsreader","memory"]],["feeds","Gather",["scan","world","ships"]],
+ ["learn","Learn and improve",["learner","shadow","predict","judge","tuner","fixer","boss"]]];
+var OKIND={code:"Plain code",claude:"Claude (AI)"};
 function oRgba(c,a){return"rgba("+c[0]+","+c[1]+","+c[2]+","+a+")"}
 function oRows(x){return Array.isArray(x)?x.filter(Array.isArray):[]}
-function oNode(r){if(!Array.isArray(r))r=[];return{id:r[0],short:r[1],grp:r[2],state:r[3],task:r[4]||"",heat:r[5]||0,metrics:oRows(r[6]),roles:Array.isArray(r[7])?oRows(r[7]):null,detail:Array.isArray(r[8])?r[8]:[],name:r[9]||r[1]}}
+function oNode(r){if(!Array.isArray(r))r=[];return{id:r[0],short:r[1],grp:r[2],state:r[3],task:r[4]||"",heat:r[5]||0,metrics:oRows(r[6]),roles:Array.isArray(r[7])?oRows(r[7]):null,detail:Array.isArray(r[8])?r[8]:[],name:r[9]||r[1],kind:r[10]==="claude"?"claude":"code"}}
 function oList(){return OFF&&Array.isArray(OFF.n)?OFF.n.map(oNode):[]}
 function oFmtNum(v){return typeof v==="number"?v.toLocaleString():String(v==null?"":v)}
 function oEmpty(){
@@ -2130,15 +2135,34 @@ function drawOffice(now){
  c.font='600 9.5px "Bahnschrift","Segoe UI Variable Display",ui-rounded,system-ui,sans-serif';c.textBaseline="middle";
  // column captions
  c.fillStyle="rgba(138,147,196,.55)";c.textAlign="center";
- c.fillText("GATHER",OC.byId.scan?OC.byId.scan.x:36,8);c.fillText("SECTOR DESKS",W*.5,8);c.fillText("DECIDE",OC.byId.head&&OC.byId.risk?(OC.byId.head.x+OC.byId.risk.x)/2:W*.85,8);
- // lines
+ c.textAlign="left";
+ if(OC.byId.scan)c.fillText("GATHER",Math.max(2,OC.byId.scan.x-10),8);
+ if(OC.byId.tech)c.fillText("DESKS",OC.byId.tech.x-8,8);
+ if(OC.byId.head)c.fillText("DECIDE",OC.byId.head.x-14,8);
+ var lt=null;["learner","shadow","predict","judge","tuner","fixer","boss"].forEach(function(id){var o=OC.byId[id];if(o&&(!lt||o.y<lt.y))lt=o});
+ if(lt){var lx=W;["learner","shadow","predict","judge","tuner","fixer","boss"].forEach(function(id){var o=OC.byId[id];if(o)lx=Math.min(lx,o.x)});c.fillText("LEARN",Math.max(2,lx-12),lt.y-lt.r-12)}
+ // lines. Lines into the desks meet on a bus left of them, lines out leave from a bus right of them (after their names)
+ var T=OC.byId.tech,Cr=OC.byId.crypto,LB=T?T.x-14:0,RB=T?T.x+64:0,top=T?T.y:0,bot=Cr?Cr.y:0,top2=top,bot2=bot,seen={},L=[];
  oRows(OFF.e).forEach(function(e,i){
   var A=OC.byId[e[0]],B=OC.byId[e[1]];if(!A||!B)return;
-  var p=oEdgePath(A,B),on=e[2]===1,col=OSTATE[A.n.state]||OSTATE.off;
+  var ad=ODESKS.indexOf(A.id)>=0,bd=ODESKS.indexOf(B.id)>=0,key,p1,p2;
+  if(bd&&!ad&&T&&Cr){key=A.id+">bus";p1=A;p2={x:LB,y:A.y};top=Math.min(top,A.y);bot=Math.max(bot,A.y)}
+  else if(ad&&!bd&&T&&Cr){key="bus>"+B.id;p1={x:RB,y:B.y};p2=B;top2=Math.min(top2,B.y);bot2=Math.max(bot2,B.y)}
+  else{key=A.id+">"+B.id;p1=A;p2=B}
+  if(seen[key]){seen[key].on=seen[key].on||e[2]===1;return}
+  seen[key]={p:oEdgePath(p1,p2),on:e[2]===1,src:ad?null:A,i:i};L.push(seen[key]);
+ });
+ if(T&&Cr){
+  c.lineWidth=1;c.strokeStyle="rgba(130,150,255,.2)";c.beginPath();c.moveTo(LB,top);c.lineTo(LB,bot);c.moveTo(RB,top2);c.lineTo(RB,bot2);c.stroke();
+  ODESKS.forEach(function(id){var o=OC.byId[id];if(!o)return;var on=o.n.state==="working",col=OSTATE[o.n.state]||OSTATE.off;
+   c.strokeStyle=on?oRgba(col,.4):"rgba(130,150,255,.12)";c.beginPath();c.moveTo(LB,o.y);c.lineTo(o.x-o.r,o.y);c.stroke()});
+ }
+ L.forEach(function(l){
+  var p=l.p,on=l.on,col=l.src?(OSTATE[l.src.n.state]||OSTATE.off):OSTATE.working;
   c.beginPath();c.moveTo(p.ax,p.ay);c.quadraticCurveTo(p.cx,p.cy,p.bx,p.by);
   c.strokeStyle=on?oRgba(col,.42):"rgba(130,150,255,.11)";c.lineWidth=on?1.3:.8;c.stroke();
   if(on&&!still){
-   for(var k=0;k<2;k++){var t=((now/2200)+i*.173+k*.5)%1,q=oPt(p,t);
+   for(var k=0;k<2;k++){var t=((now/2200)+l.i*.173+k*.5)%1,q=oPt(p,t);
     c.beginPath();c.arc(q[0],q[1],1.9,0,6.283);c.fillStyle=oRgba(col,.95);c.shadowColor=oRgba(col,.9);c.shadowBlur=6;c.fill();c.shadowBlur=0}
   }
  });
@@ -2151,6 +2175,7 @@ function drawOffice(now){
   c.beginPath();c.arc(o.x,o.y,o.r,0,6.283);c.fillStyle="#070a1c";c.fill();c.lineWidth=sel?2.4:1.6;c.strokeStyle=oRgba(col,n.state==="off"?.5:1);c.stroke();
   c.beginPath();c.arc(o.x,o.y,o.r*.42,0,6.283);c.fillStyle=oRgba(col,n.state==="off"?.5:1);c.fill();
   if(n.id==="head"){c.beginPath();c.arc(o.x,o.y,o.r+5,0,6.283);c.setLineDash([2,4]);c.strokeStyle=oRgba(col,.5);c.lineWidth=1;c.stroke();c.setLineDash([])}
+  if(n.kind==="claude"){c.beginPath();c.arc(o.x,o.y,o.r+3.5,0,6.283);c.setLineDash([2,2.5]);c.strokeStyle="rgba(181,140,255,"+(n.state==="off"?.4:.9)+")";c.lineWidth=1.1;c.stroke();c.setLineDash([])}
   var desk=n.grp==="desks";
   c.fillStyle=n.state==="off"?"rgba(138,147,196,.6)":"rgba(232,236,255,.95)";c.strokeStyle="rgba(4,5,13,.85)";c.lineWidth=3;
   if(desk){c.textAlign="left";c.strokeText(n.short,o.x+o.r+7,o.y);c.fillText(n.short,o.x+o.r+7,o.y)}
@@ -2184,7 +2209,7 @@ function offHit(x,y){
 
 /* ---- the lists under it ---- */
 function oRow(n){
- return'<button class="orow s-'+n.state+'" data-o="'+esc(n.id)+'"><i class="od"></i><span class="ol"><b>'+esc(n.name)+'</b><small>'+esc(n.task||OSTATE_TXT[n.state])+'</small></span>'+
+ return'<button class="orow s-'+n.state+'" data-o="'+esc(n.id)+'"><i class="od"></i><span class="ol"><b>'+esc(n.name)+(n.kind==="claude"?'<span class="oai">AI</span>':"")+'</b><small>'+esc(n.task||OSTATE_TXT[n.state])+'</small></span>'+
   (n.grp==="desks"?'<span class="oc" aria-hidden="true">'+(n.roles||[]).map(function(r){return'<i class="rd '+(r[1]==="done"?"on":r[1]==="stale"?"st":"")+'"></i>'}).join("")+"</span>":"")+
   '<span class="ot">'+esc(OSTATE_TXT[n.state])+'</span><span class="go">›</span></button>';
 }
@@ -2199,17 +2224,21 @@ function renderOffice(){
   '<span class="op ok">'+cnt.working+" working</span>"+
   (cnt.problem?'<span class="op bad">'+cnt.problem+" problem"+(cnt.problem>1?"s":"")+"</span>":"")+
   (cnt.waiting?'<span class="op warn">'+cnt.waiting+" waiting</span>":"")+
-  '<span class="op '+(OFF.cl==="not started"?"warn":"ok")+'">Claude teams: '+esc(OFF.cl||"not started")+"</span>";
+  '<span class="op '+(OFF.cl==="done"?"ok":OFF.cl==="problem"?"bad":"warn")+'">Claude teams: '+esc(OFF.cl==="done"?"ran "+(OFF.cw||""):OFF.cl==="problem"?"missed "+(OFF.cw||"last run"):(OFF.cl||"not started"))+"</span>"+
+  (Array.isArray(OFF.dk)&&OFF.dk[1]===1?'<span class="op bad">Disk almost full: '+esc(OFF.dk[0])+" GB</span>":"");
  $("of-age").innerHTML="Updated "+esc(agoIso(OFF.as_of))+" ago &nbsp;·&nbsp; tap a dot for details";
  var h=[],byId={};list.forEach(function(n){byId[n.id]=n});
+ var listed={};
  OGROUPS.forEach(function(g){
-  var rows=g[2].map(function(id){return byId[id]}).filter(Boolean);if(!rows.length)return;
+  var rows=g[2].map(function(id){listed[id]=1;return byId[id]}).filter(Boolean);if(!rows.length)return;
   h.push('<div class="sec"><span>'+g[1]+'</span></div><div class="olist">'+rows.map(oRow).join("")+"</div>");
  });
+ var rest=list.filter(function(n){return!listed[n.id]});      // a bot added on the PC later still shows up here
+ if(rest.length)h.push('<div class="sec"><span>Other</span></div><div class="olist">'+rest.map(oRow).join("")+"</div>");
  h.push('<div class="sec"><span>Recent activity</span><span class="faint">newest first</span></div>');
  if(Array.isArray(OFF.f)&&OFF.f.length)h.push('<div class="ofeed">'+oRows(OFF.f).map(function(f){return'<div class="of"><span class="tm">'+esc(clockOf(f[0]))+'</span><span class="who">'+esc(f[1])+'</span><span class="tx">'+esc(f[2])+"</span></div>"}).join("")+"</div>");
  else h.push('<div class="note" style="margin:0 16px">Nothing yet. Trades, blocks and reviews show here as they happen.</div>');
- h.push('<div class="note" style="margin:14px 16px 26px">The desks run on plain code today. The Claude teams (researcher, chart checker, skeptic) are not running yet, so nothing here is AI thinking. This page only reads. It cannot place a trade or change a limit.</div>');
+ h.push('<div class="note" style="margin:14px 16px 26px">Dots with a dashed violet ring are Claude (AI) helpers: the news reader, the desk teams, desk ideas, the judge, the fixer, the boss brain and the chat box. They read, argue and advise; plain code places every order. This page only reads. It cannot place a trade or change a limit.</div>');
  $("of-rest").innerHTML=h.join("");
  sizeOffice();oLayout();drawOffice(performance.now());offStart();
  if(sheet.kind==="office"&&sheet.oid)fillOffice(true);
@@ -2221,7 +2250,7 @@ function fillOffice(keep){
  var n=null;oList().forEach(function(x){if(x.id===sheet.oid)n=x});
  if(!n)return;
  var col=OSTATE[n.state]||OSTATE.off;
- var h='<div class="sd-h"><div class="sy">'+esc(n.name)+'</div><div class="nm2"><span class="op s-'+n.state+'">'+esc(OSTATE_TXT[n.state])+"</span> &nbsp;"+(n.roles?"Plain code today":"Plain code")+"</div></div>"+
+ var h='<div class="sd-h"><div class="sy">'+esc(n.name)+'</div><div class="nm2"><span class="op s-'+n.state+'">'+esc(OSTATE_TXT[n.state])+"</span> &nbsp;"+esc(OKIND[n.kind]||"Plain code")+"</div></div>"+
   '<div class="sd-why" style="color:var(--ink);font-size:15px;margin-top:10px">'+esc(n.task)+"</div>";
  if(n.metrics&&n.metrics.length)h+='<div class="kv2">'+n.metrics.map(function(m){return"<div><small>"+esc(m[0])+"</small><b>"+esc(oFmtNum(m[1]))+"</b></div>"}).join("")+"</div>";
  if(n.detail&&n.detail.length)h+='<ul class="odl">'+n.detail.map(function(d){return"<li>"+esc(d)+"</li>"}).join("")+"</ul>";
